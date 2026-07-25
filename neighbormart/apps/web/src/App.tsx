@@ -29,12 +29,17 @@ const SchedulePage = lazy(() => import('@/pages/owner/SchedulePage'));
 const AuditLogPage = lazy(() => import('@/pages/owner/AuditLogPage'));
 const SettingsPage = lazy(() => import('@/pages/owner/SettingsPage'));
 const ProfilePage = lazy(() => import('@/pages/owner/ProfilePage'));
+const SalesPage = lazy(() => import('@/pages/owner/SalesPage'));
+const FinancePage = lazy(() => import('@/pages/owner/FinancePage'));
+const PromotionsPage = lazy(() => import('@/pages/owner/PromotionsPage'));
+const CustomersPage = lazy(() => import('@/pages/owner/CustomersPage'));
 
 // Manager pages (lazy loaded)
 const ManagerDashboard = lazy(() => import('@/pages/manager/DashboardPage'));
 
 // Staff pages (lazy loaded)
 const StaffDashboard = lazy(() => import('@/pages/staff/DashboardPage'));
+const POSPage = lazy(() => import('@/pages/staff/POSPage'));
 
 // Fallback spinner shown while lazy chunks load
 function PageLoader() {
@@ -113,6 +118,10 @@ export default function App() {
             <Route path="audit-log" element={<AuditLogPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="sales" element={<SalesPage />} />
+            <Route path="finance" element={<FinancePage />} />
+            <Route path="promotions" element={<PromotionsPage />} />
+            <Route path="customers" element={<CustomersPage />} />
           </Route>
 
           {/* ── Manager routes ────────────────────────────────────── */}
@@ -139,6 +148,7 @@ export default function App() {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<StaffDashboard />} />
+            <Route path="pos" element={<POSPage />} />
           </Route>
 
           {/* Catch-all → root redirect */}

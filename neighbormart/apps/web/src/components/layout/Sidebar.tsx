@@ -14,6 +14,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Store,
+  TrendingUp,
+  Wallet,
+  Gift,
+  UserCheck,
+  ShoppingCart,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
@@ -37,6 +42,10 @@ const ownerNav: NavItem[] = [
   { path: '/owner/categories', icon: Tag, label: 'Categories & Brands' },
   { path: '/owner/inventory', icon: BarChart3, label: 'Inventory' },
   { path: '/owner/suppliers', icon: Truck, label: 'Suppliers' },
+  { path: '/owner/sales', icon: TrendingUp, label: 'Sales' },
+  { path: '/owner/finance', icon: Wallet, label: 'Finance' },
+  { path: '/owner/promotions', icon: Gift, label: 'Promotions' },
+  { path: '/owner/customers', icon: UserCheck, label: 'Customers (CRM)' },
   { path: '/owner/team', icon: Users, label: 'Team' },
   { path: '/owner/schedule', icon: Calendar, label: 'Schedule' },
   { path: '/owner/audit-log', icon: ClipboardList, label: 'Audit Log' },
@@ -54,6 +63,7 @@ const managerNav: NavItem[] = [
 
 const staffNav: NavItem[] = [
   { path: '/staff/dashboard', icon: LayoutDashboard, label: 'My Dashboard' },
+  { path: '/staff/pos', icon: ShoppingCart, label: 'POS Register' },
   { path: '/staff/schedule', icon: Calendar, label: 'My Schedule' },
   { path: '/staff/attendance', icon: CheckSquare, label: 'My Attendance' },
 ];

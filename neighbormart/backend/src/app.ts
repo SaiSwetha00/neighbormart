@@ -17,6 +17,13 @@ import supplierRoutes from './modules/suppliers/suppliers.routes';
 import staffRoutes from './modules/staff/staff.routes';
 import dashboardRoutes from './modules/dashboard/dashboard.routes';
 import auditRoutes from './modules/audit/audit.routes';
+import customerRoutes from './modules/customers/customers.routes';
+import orderRoutes from './modules/orders/orders.routes';
+import posRoutes from './modules/pos/pos.routes';
+import salesRoutes from './modules/sales/sales.routes';
+import financeRoutes from './modules/finance/finance.routes';
+import promotionsRoutes from './modules/promotions/promotions.routes';
+import notificationsRoutes from './modules/notifications/notifications.routes';
 
 const app = express();
 
@@ -63,6 +70,13 @@ app.use('/api', supplierRoutes);
 app.use('/api', staffRoutes);
 app.use('/api', dashboardRoutes);
 app.use('/api', auditRoutes);
+app.use('/api', customerRoutes);
+app.use('/api', orderRoutes);
+app.use('/api', posRoutes);
+app.use('/api', salesRoutes);
+app.use('/api', financeRoutes);
+app.use('/api', promotionsRoutes);
+app.use('/api', notificationsRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Phase 1 Enums ───────────────────────────────────────────────────────────
+
 enum UserRole {
   OWNER
   MANAGER
@@ -108,6 +110,91 @@ enum DietaryTag {
   GLUTEN_FREE
 }
 
+// ─── Phase 2 Enums ───────────────────────────────────────────────────────────
+
+enum CustomerTier {
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum OrderType {
+  IN_STORE
+  DELIVERY
+  PICKUP
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+}
+
+enum ReturnStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+}
+
+enum LoyaltyTxType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  BONUS
+}
+
+enum PromotionType {
+  PERCENTAGE
+  FIXED
+  BUY_X_GET_Y
+}
+
+enum PromotionAppliesTo {
+  ALL
+  CATEGORY
+  PRODUCT
+}
+
+enum PromotionStatus {
+  ACTIVE
+  SCHEDULED
+  EXPIRED
+  DISABLED
+}
+
+enum CouponStatus {
+  ACTIVE
+  EXPIRED
+  DISABLED
+}
+
+enum ExpenseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  USED
+  EXPIRED
+}
+
+// ─── Core Models ─────────────────────────────────────────────────────────────
+
 model Store {
   id                  String    @id @default(cuid())
   name                String
@@ -136,229 +223,661 @@ model Store {
   wasteLogs           WasteLog[]
   dailyAudits         DailyAudit[]
   auditLogs           AuditLog[]
+  customers           Customer[]
+  orders              Order[]
+  promotions          Promotion[]
+  coupons             Coupon[]
+  expenses            Expense[]
+  taxConfigs          TaxConfig[]
+  giftCards           GiftCard[]
+  posSessions         POSSession[]
 
   @@map("stores")
 }
 
 model User {
-  id          String      @id @default(cuid())
-  storeId     String
-  name        String
-  email       String      @unique @db.VarChar(320)
-  phone       String?
-  password    String      @db.VarChar(256)
-  role        UserRole    @default(STAFF)
-  photo       String?
-  status      UserStatus  @default(ACTIVE)
-  mfaEnabled  Boolean     @default(false)
-  mfaSecret   String?
-  lastLogin   DateTime?
-  failedLogins Int        @default(0)
-  lockedUntil DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String      @id @default(cuid())
+  storeId      String
+  name         String
+  email        String      @unique @db.VarChar(320)
+  phone        String?
+  password     String      @db.VarChar(256)
+  role         UserRole    @default(STAFF)
+  photo        String?
+  status       UserStatus  @default(ACTIVE)
+  mfaEnabled   Boolean     @default(false)
+  mfaSecret    String?
+  lastLogin    DateTime?
+  failedLogins Int         @default(0)
+  lockedUntil  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
-  store           Store           @relation(fields: [storeId], references: [id])
-  sessions        Session[]
-  loginHistory    LoginHistory[]
-  staff           Staff?
-  manager         Manager?
-  auditLogs       AuditLog[]
-  stockAdjustments StockAdjustment[]
-  wasteLogs       WasteLog[]
-  shiftsCreated   Shift[]         @relation("ShiftCreatedBy")
-  priceHistory    PriceHistory[]
+  store              Store            @relation(fields: [storeId], references: [id])
+  sessions           Session[]
+  loginHistory       LoginHistory[]
+  staff              Staff?
+  manager            Manager?
+  customer           Customer?
+  auditLogs          AuditLog[]
+  stockAdjustments   StockAdjustment[]
+  wasteLogs          WasteLog[]
+  shiftsCreated      Shift[]          @relation("ShiftCreatedBy")
+  priceHistory       PriceHistory[]
+  cashierOrders      Order[]          @relation("CashierOrders")
+  expensesLogged     Expense[]        @relation("ExpenseLoggedBy")
+  expensesApproved   Expense[]        @relation("ExpenseApprovedBy")
+  posSessions        POSSession[]     @relation("POSCashier")
 
   @@map("users")
 }
 
 model Session {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
-  token     String    @unique @db.VarChar(512)
+  token     String   @unique @db.VarChar(512)
   ipAddress String?
-  device    String?   @db.VarChar(512)
+  device    String?  @db.VarChar(512)
   expiresAt DateTime
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
 }
 
 model LoginHistory {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   userId    String
   ipAddress String?
   device    String?
   location  String?
   status    String
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("login_history")
 }
 
 model Staff {
-  id          String        @id @default(cuid())
-  userId      String        @unique
-  storeId     String
-  employeeId  String        @unique
-  position    StaffPosition @default(CASHIER)
-  shiftType   ShiftType     @default(MORNING)
-  dateJoined  DateTime      @default(now())
-  notes       String?
-  status      UserStatus    @default(ACTIVE)
-  createdBy   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  userId     String        @unique
+  storeId    String
+  employeeId String        @unique
+  position   StaffPosition @default(CASHIER)
+  shiftType  ShiftType     @default(MORNING)
+  dateJoined DateTime      @default(now())
+  notes      String?
+  status     UserStatus    @default(ACTIVE)
+  createdBy  String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
-  user            User            @relation(fields: [userId], references: [id])
-  store           Store           @relation(fields: [storeId], references: [id])
-  shifts          Shift[]
-  attendance      Attendance[]
-  leaveRequests   LeaveRequest[]
+  user          User          @relation(fields: [userId], references: [id])
+  store         Store         @relation(fields: [storeId], references: [id])
+  shifts        Shift[]
+  attendance    Attendance[]
+  leaveRequests LeaveRequest[]
 
   @@map("staff")
 }
 
 model Manager {
-  id          String      @id @default(cuid())
-  userId      String      @unique
+  id          String     @id @default(cuid())
+  userId      String     @unique
   storeId     String
   assignedBy  String?
-  permissions Json        @default("{}")
-  status      UserStatus  @default(ACTIVE)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  permissions Json       @default("{}")
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
-  user        User        @relation(fields: [userId], references: [id])
-  store       Store       @relation(fields: [storeId], references: [id])
+  user  User    @relation(fields: [userId], references: [id])
+  store Store   @relation(fields: [storeId], references: [id])
 
   @@map("managers")
 }
 
+// ─── Phase 2: Customer ────────────────────────────────────────────────────────
+
+model Customer {
+  id            String       @id @default(cuid())
+  userId        String       @unique
+  storeId       String
+  loyaltyPoints Int          @default(0)
+  tier          CustomerTier @default(SILVER)
+  totalSpend    Float        @default(0)
+  totalOrders   Int          @default(0)
+  dietaryPrefs  Json         @default("[]")
+  allergenPrefs Json         @default("[]")
+  notes         String?      @db.Text
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user            User                 @relation(fields: [userId], references: [id])
+  store           Store                @relation(fields: [storeId], references: [id])
+  addresses       SavedAddress[]
+  wishlists       Wishlist[]
+  shoppingLists   ShoppingList[]
+  orders          Order[]
+  loyaltyTxs      LoyaltyTransaction[]
+  referralsGiven  Referral[]           @relation("ReferrerCustomer")
+  referralsRcvd   Referral[]           @relation("ReferredCustomer")
+  reviews         Review[]
+  complaints      Complaint[]
+  giftCardsIssued GiftCard[]
+
+  @@map("customers")
+}
+
+model SavedAddress {
+  id          String   @id @default(cuid())
+  customerId  String
+  label       String
+  fullAddress String
+  city        String?
+  postalCode  String?
+  lat         Float?
+  lng         Float?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+
+  @@map("saved_addresses")
+}
+
+model Wishlist {
+  id         String         @id @default(cuid())
+  customerId String
+  name       String
+  createdAt  DateTime       @default(now())
+
+  customer Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items    WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  productId  String
+  addedAt    DateTime @default(now())
+
+  wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([wishlistId, productId])
+  @@map("wishlist_items")
+}
+
+model ShoppingList {
+  id           String             @id @default(cuid())
+  customerId   String
+  name         String
+  reminderDate DateTime?
+  createdAt    DateTime           @default(now())
+
+  customer Customer           @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  items    ShoppingListItem[]
+
+  @@map("shopping_lists")
+}
+
+model ShoppingListItem {
+  id        String   @id @default(cuid())
+  listId    String
+  productId String
+  quantity  Int      @default(1)
+  isBought  Boolean  @default(false)
+  addedAt   DateTime @default(now())
+
+  list    ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  product Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("shopping_list_items")
+}
+
+// ─── Phase 2: Orders ─────────────────────────────────────────────────────────
+
+model Order {
+  id                  String        @id @default(cuid())
+  storeId             String
+  customerId          String?
+  cashierId           String?
+  type                OrderType     @default(IN_STORE)
+  status              OrderStatus   @default(PENDING)
+  subtotal            Float         @default(0)
+  taxAmount           Float         @default(0)
+  discountAmount      Float         @default(0)
+  loyaltyPointsUsed   Int           @default(0)
+  total               Float         @default(0)
+  paymentMethod       PaymentMethod @default(CASH)
+  cashTendered        Float?
+  changeGiven         Float?
+  deliveryAddressId   String?
+  deliverySlot        String?
+  specialInstructions String?       @db.Text
+  couponCode          String?
+  promotionIds        Json          @default("[]")
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  store           Store         @relation(fields: [storeId], references: [id])
+  customer        Customer?     @relation(fields: [customerId], references: [id])
+  cashier         User?         @relation("CashierOrders", fields: [cashierId], references: [id])
+  deliveryAddress SavedAddress? @relation(fields: [deliveryAddressId], references: [id])
+  items           OrderItem[]
+  tracking        OrderTracking[]
+  returns         Return[]
+  reviews         Review[]
+  complaints      Complaint[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String?
+  variantId   String?
+  productName String
+  quantity    Int
+  unitPrice   Float
+  discount    Float   @default(0)
+  subtotal    Float
+
+  order       Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product?     @relation(fields: [productId], references: [id])
+  returnItems ReturnItem[]
+
+  @@map("order_items")
+}
+
+model OrderTracking {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  note      String?
+  updatedBy String?
+  timestamp DateTime    @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("order_tracking")
+}
+
+model Return {
+  id           String       @id @default(cuid())
+  orderId      String
+  storeId      String
+  customerId   String?
+  status       ReturnStatus @default(PENDING)
+  refundAmount Float        @default(0)
+  processedBy  String?
+  reason       String?      @db.Text
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  order Order        @relation(fields: [orderId], references: [id])
+  items ReturnItem[]
+
+  @@map("returns")
+}
+
+model ReturnItem {
+  id          String @id @default(cuid())
+  returnId    String
+  orderItemId String
+  quantity    Int
+  reason      String?
+  condition   String?
+
+  return    Return    @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id])
+
+  @@map("return_items")
+}
+
+// ─── Phase 2: Loyalty ────────────────────────────────────────────────────────
+
+model LoyaltyTransaction {
+  id          String        @id @default(cuid())
+  customerId  String
+  storeId     String
+  type        LoyaltyTxType
+  points      Int
+  reference   String?
+  description String?
+  createdAt   DateTime      @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@map("loyalty_transactions")
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+  referrerId    String
+  referredId    String
+  storeId       String
+  pointsAwarded Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  referrer Customer @relation("ReferrerCustomer", fields: [referrerId], references: [id])
+  referred Customer @relation("ReferredCustomer", fields: [referredId], references: [id])
+
+  @@map("referrals")
+}
+
+// ─── Phase 2: Promotions ─────────────────────────────────────────────────────
+
+model Promotion {
+  id             String             @id @default(cuid())
+  storeId        String
+  name           String
+  type           PromotionType
+  discountValue  Float
+  minOrderAmount Float              @default(0)
+  appliesTo      PromotionAppliesTo @default(ALL)
+  targetId       String?
+  startDate      DateTime
+  endDate        DateTime
+  usageLimit     Int?
+  usedCount      Int                @default(0)
+  status         PromotionStatus    @default(ACTIVE)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("promotions")
+}
+
+model Coupon {
+  id               String       @id @default(cuid())
+  storeId          String
+  code             String       @unique
+  type             PromotionType
+  value            Float
+  minOrder         Float        @default(0)
+  usageLimit       Int?
+  perCustomerLimit Int          @default(1)
+  usedCount        Int          @default(0)
+  expiryDate       DateTime?
+  status           CouponStatus @default(ACTIVE)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("coupons")
+}
+
+// ─── Phase 2: Finance ────────────────────────────────────────────────────────
+
+model Expense {
+  id          String        @id @default(cuid())
+  storeId     String
+  category    String
+  amount      Float
+  description String?       @db.Text
+  receiptUrl  String?
+  loggedBy    String
+  approvedBy  String?
+  status      ExpenseStatus @default(PENDING)
+  date        DateTime
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  store          Store  @relation(fields: [storeId], references: [id])
+  loggedByUser   User   @relation("ExpenseLoggedBy", fields: [loggedBy], references: [id])
+  approvedByUser User?  @relation("ExpenseApprovedBy", fields: [approvedBy], references: [id])
+
+  @@map("expenses")
+}
+
+model TaxConfig {
+  id         String    @id @default(cuid())
+  storeId    String
+  categoryId String?
+  taxRate    Float
+  taxType    String    @default("EXCLUSIVE")
+  taxName    String
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+
+  store    Store     @relation(fields: [storeId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
+
+  @@map("tax_configs")
+}
+
+// ─── Phase 2: Reviews & Complaints ──────────────────────────────────────────
+
+model Review {
+  id         String   @id @default(cuid())
+  customerId String
+  productId  String
+  orderId    String?
+  rating     Int
+  comment    String?  @db.Text
+  photos     Json     @default("[]")
+  isVerified Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("reviews")
+}
+
+model Complaint {
+  id             String          @id @default(cuid())
+  customerId     String
+  storeId        String
+  orderId        String?
+  type           String
+  description    String          @db.Text
+  status         ComplaintStatus @default(OPEN)
+  resolvedBy     String?
+  resolutionNote String?         @db.Text
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  order    Order?   @relation(fields: [orderId], references: [id])
+
+  @@map("complaints")
+}
+
+// ─── Phase 2: Gift Cards ─────────────────────────────────────────────────────
+
+model GiftCard {
+  id             String         @id @default(cuid())
+  storeId        String
+  code           String         @unique
+  originalValue  Float
+  currentBalance Float
+  issuedTo       String?
+  expiryDate     DateTime?
+  status         GiftCardStatus @default(ACTIVE)
+  createdAt      DateTime       @default(now())
+
+  store    Store     @relation(fields: [storeId], references: [id])
+  customer Customer? @relation(fields: [issuedTo], references: [id])
+
+  @@map("gift_cards")
+}
+
+// ─── Phase 2: POS ────────────────────────────────────────────────────────────
+
+model POSSession {
+  id              String    @id @default(cuid())
+  storeId         String
+  cashierId       String
+  openingBalance  Float     @default(0)
+  closingBalance  Float?
+  expectedBalance Float?
+  variance        Float?
+  status          String    @default("OPEN")
+  openedAt        DateTime  @default(now())
+  closedAt        DateTime?
+  notes           String?
+
+  store   Store @relation(fields: [storeId], references: [id])
+  cashier User  @relation("POSCashier", fields: [cashierId], references: [id])
+
+  @@map("pos_sessions")
+}
+
+// ─── Phase 2: Notifications ──────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  storeId   String?
+  userId    String?
+  type      String
+  title     String
+  message   String   @db.Text
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+// ─── Phase 1: Catalog (unchanged) ────────────────────────────────────────────
+
 model Brand {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   storeId   String
   name      String
   logo      String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  store     Store     @relation(fields: [storeId], references: [id])
-  products  Product[]
+  store    Store     @relation(fields: [storeId], references: [id])
+  products Product[]
 
   @@map("brands")
 }
 
 model Category {
-  id        String      @id @default(cuid())
+  id        String     @id @default(cuid())
   storeId   String
   name      String
   icon      String?
   image     String?
   parentId  String?
-  sortOrder Int         @default(0)
-  createdAt DateTime    @default(now())
+  sortOrder Int        @default(0)
+  createdAt DateTime   @default(now())
 
   store     Store       @relation(fields: [storeId], references: [id])
   parent    Category?   @relation("CategoryParent", fields: [parentId], references: [id])
   children  Category[]  @relation("CategoryParent")
   products  Product[]
+  taxConfigs TaxConfig[]
 
   @@map("categories")
 }
 
 model Product {
-  id                  String        @id @default(cuid())
-  storeId             String
-  name                String
-  description         String?
-  sku                 String        @unique
-  barcode             String?       @unique
-  categoryId          String?
-  brandId             String?
-  purchasePrice       Float         @default(0)
-  sellingPrice        Float         @default(0)
-  wholesalePrice      Float?
-  taxRate             Float         @default(0)
-  stockQty            Int           @default(0)
-  lowStockThreshold   Int           @default(10)
-  storageType         StorageType   @default(AMBIENT)
-  aisle               String?
-  shelfNumber         String?
-  shelfRow            String?
-  countryOfOrigin     String?
-  isPerishable        Boolean       @default(false)
-  isOrganic           Boolean       @default(false)
-  isVegan             Boolean       @default(false)
-  isGlutenFree        Boolean       @default(false)
-  isHalal             Boolean       @default(false)
-  isKosher            Boolean       @default(false)
-  seasonalStart       DateTime?
-  seasonalEnd         DateTime?
-  availableFromTime   String?
-  unitOfMeasure       String        @default("unit")
-  packSize            Int           @default(1)
-  packageType         String?
-  isRecyclable        Boolean       @default(false)
-  status              ProductStatus @default(ACTIVE)
-  createdBy           String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  storeId           String
+  name              String
+  description       String?
+  sku               String        @unique
+  barcode           String?       @unique
+  categoryId        String?
+  brandId           String?
+  purchasePrice     Float         @default(0)
+  sellingPrice      Float         @default(0)
+  wholesalePrice    Float?
+  taxRate           Float         @default(0)
+  stockQty          Int           @default(0)
+  lowStockThreshold Int           @default(10)
+  storageType       StorageType   @default(AMBIENT)
+  aisle             String?
+  shelfNumber       String?
+  shelfRow          String?
+  countryOfOrigin   String?
+  isPerishable      Boolean       @default(false)
+  isOrganic         Boolean       @default(false)
+  isVegan           Boolean       @default(false)
+  isGlutenFree      Boolean       @default(false)
+  isHalal           Boolean       @default(false)
+  isKosher          Boolean       @default(false)
+  seasonalStart     DateTime?
+  seasonalEnd       DateTime?
+  availableFromTime String?
+  unitOfMeasure     String        @default("unit")
+  packSize          Int           @default(1)
+  packageType       String?
+  isRecyclable      Boolean       @default(false)
+  status            ProductStatus @default(ACTIVE)
+  createdBy         String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
-  store               Store                 @relation(fields: [storeId], references: [id])
-  category            Category?             @relation(fields: [categoryId], references: [id])
-  brand               Brand?                @relation(fields: [brandId], references: [id])
-  images              ProductImage[]
-  variants            ProductVariant[]
-  nutrition           ProductNutrition?
-  allergens           ProductAllergen[]
-  dietaryTags         ProductDietaryTag[]
-  batches             ProductBatch[]
-  priceHistory        PriceHistory[]
-  substitutes         ProductSubstitute[]   @relation("ProductSubstitutes")
-  substitutedBy       ProductSubstitute[]   @relation("SubstituteProducts")
-  stockAdjustments    StockAdjustment[]
-  wasteLogs           WasteLog[]
-  poItems             POItem[]
-  grnItems            GRNItem[]
+  store             Store               @relation(fields: [storeId], references: [id])
+  category          Category?           @relation(fields: [categoryId], references: [id])
+  brand             Brand?              @relation(fields: [brandId], references: [id])
+  images            ProductImage[]
+  variants          ProductVariant[]
+  nutrition         ProductNutrition?
+  allergens         ProductAllergen[]
+  dietaryTags       ProductDietaryTag[]
+  batches           ProductBatch[]
+  priceHistory      PriceHistory[]
+  substitutes       ProductSubstitute[] @relation("ProductSubstitutes")
+  substitutedBy     ProductSubstitute[] @relation("SubstituteProducts")
+  stockAdjustments  StockAdjustment[]
+  wasteLogs         WasteLog[]
+  poItems           POItem[]
+  grnItems          GRNItem[]
+  wishlistItems     WishlistItem[]
+  shoppingListItems ShoppingListItem[]
+  orderItems        OrderItem[]
+  reviews           Review[]
 
   @@map("products")
 }
 
 model ProductVariant {
-  id          String    @id @default(cuid())
-  productId   String
-  name        String
-  sku         String    @unique
-  barcode     String?
+  id           String   @id @default(cuid())
+  productId    String
+  name         String
+  sku          String   @unique
+  barcode      String?
   sellingPrice Float
-  stockQty    Int       @default(0)
-  unit        String?
-  createdAt   DateTime  @default(now())
+  stockQty     Int      @default(0)
+  unit         String?
+  createdAt    DateTime @default(now())
 
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_variants")
 }
 
 model ProductImage {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   productId String
   url       String
-  position  Int       @default(0)
-  createdAt DateTime  @default(now())
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
 
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_images")
 }
 
 model ProductNutrition {
-  id              String    @id @default(cuid())
-  productId       String    @unique
+  id              String  @id @default(cuid())
+  productId       String  @unique
   calories        Float?
   fat             Float?
   protein         Float?
@@ -370,28 +889,28 @@ model ProductNutrition {
   servingsPerPack Float?
   ingredients     String?
 
-  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_nutrition")
 }
 
 model ProductAllergen {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   productId String
   allergen  Allergen
 
-  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, allergen])
   @@map("product_allergens")
 }
 
 model ProductDietaryTag {
-  id        String      @id @default(cuid())
+  id        String     @id @default(cuid())
   productId String
   tag       DietaryTag
 
-  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, tag])
   @@map("product_dietary_tags")
@@ -406,122 +925,122 @@ model ProductBatch {
   receivedAt  DateTime  @default(now())
   supplierId  String?
 
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_batches")
 }
 
 model PriceHistory {
-  id          String    @id @default(cuid())
-  productId   String
-  oldPrice    Float
-  newPrice    Float
-  changedBy   String
-  changedAt   DateTime  @default(now())
-  reason      String?
+  id        String   @id @default(cuid())
+  productId String
+  oldPrice  Float
+  newPrice  Float
+  changedBy String
+  changedAt DateTime @default(now())
+  reason    String?
 
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [changedBy], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [changedBy], references: [id])
 
   @@map("price_history")
 }
 
 model ProductSubstitute {
-  id                    String    @id @default(cuid())
-  productId             String
-  substituteProductId   String
-  createdAt             DateTime  @default(now())
+  id                  String   @id @default(cuid())
+  productId           String
+  substituteProductId String
+  createdAt           DateTime @default(now())
 
-  product               Product   @relation("ProductSubstitutes", fields: [productId], references: [id], onDelete: Cascade)
-  substituteProduct     Product   @relation("SubstituteProducts", fields: [substituteProductId], references: [id], onDelete: Cascade)
+  product           Product @relation("ProductSubstitutes", fields: [productId], references: [id], onDelete: Cascade)
+  substituteProduct Product @relation("SubstituteProducts", fields: [substituteProductId], references: [id], onDelete: Cascade)
 
   @@unique([productId, substituteProductId])
   @@map("product_substitutes")
 }
 
 model StockAdjustment {
-  id          String          @id @default(cuid())
-  productId   String
-  storeId     String
-  type        AdjustmentType
-  quantity    Int
-  reason      String?
-  adjustedBy  String
-  createdAt   DateTime        @default(now())
+  id         String         @id @default(cuid())
+  productId  String
+  storeId    String
+  type       AdjustmentType
+  quantity   Int
+  reason     String?
+  adjustedBy String
+  createdAt  DateTime       @default(now())
 
-  product     Product         @relation(fields: [productId], references: [id])
-  store       Store           @relation(fields: [storeId], references: [id])
-  user        User            @relation(fields: [adjustedBy], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId], references: [id])
+  user    User    @relation(fields: [adjustedBy], references: [id])
 
   @@map("stock_adjustments")
 }
 
 model WasteLog {
-  id              String      @id @default(cuid())
-  productId       String
-  storeId         String
-  quantity        Int
-  reason          WasteReason
-  financialValue  Float?
-  loggedBy        String
-  createdAt       DateTime    @default(now())
+  id             String      @id @default(cuid())
+  productId      String
+  storeId        String
+  quantity       Int
+  reason         WasteReason
+  financialValue Float?
+  loggedBy       String
+  createdAt      DateTime    @default(now())
 
-  product         Product     @relation(fields: [productId], references: [id])
-  store           Store       @relation(fields: [storeId], references: [id])
-  user            User        @relation(fields: [loggedBy], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId], references: [id])
+  user    User    @relation(fields: [loggedBy], references: [id])
 
   @@map("waste_logs")
 }
 
 model DailyAudit {
-  id              String    @id @default(cuid())
-  storeId         String
-  date            DateTime  @default(now())
-  status          String    @default("PENDING")
-  completedBy     String?
-  discrepancies   Json?
-  createdAt       DateTime  @default(now())
+  id            String   @id @default(cuid())
+  storeId       String
+  date          DateTime @default(now())
+  status        String   @default("PENDING")
+  completedBy   String?
+  discrepancies Json?
+  createdAt     DateTime @default(now())
 
-  store           Store     @relation(fields: [storeId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
 
   @@map("daily_audits")
 }
 
 model Supplier {
-  id              String    @id @default(cuid())
-  storeId         String
-  name            String
-  contactPerson   String?
-  phone           String?
-  email           String?
-  address         String?
-  paymentTerms    String?
-  leadTimeDays    Int       @default(3)
-  rating          Float     @default(0)
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id            String   @id @default(cuid())
+  storeId       String
+  name          String
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  paymentTerms  String?
+  leadTimeDays  Int      @default(3)
+  rating        Float    @default(0)
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  store           Store             @relation(fields: [storeId], references: [id])
-  purchaseOrders  PurchaseOrder[]
-  payments        SupplierPayment[]
+  store          Store             @relation(fields: [storeId], references: [id])
+  purchaseOrders PurchaseOrder[]
+  payments       SupplierPayment[]
 
   @@map("suppliers")
 }
 
 model PurchaseOrder {
-  id            String    @id @default(cuid())
-  storeId       String
-  supplierId    String
-  status        POStatus  @default(DRAFT)
-  expectedDate  DateTime?
-  notes         String?
-  createdBy     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  storeId      String
+  supplierId   String
+  status       POStatus  @default(DRAFT)
+  expectedDate DateTime?
+  notes        String?
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
-  store         Store         @relation(fields: [storeId], references: [id])
-  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  store         Store           @relation(fields: [storeId], references: [id])
+  supplier      Supplier        @relation(fields: [supplierId], references: [id])
   items         POItem[]
   goodsReceived GoodsReceived[]
 
@@ -529,12 +1048,12 @@ model PurchaseOrder {
 }
 
 model POItem {
-  id          String    @id @default(cuid())
+  id          String @id @default(cuid())
   poId        String
   productId   String
   quantity    Int
   unitPrice   Float
-  receivedQty Int       @default(0)
+  receivedQty Int    @default(0)
 
   purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
   product       Product       @relation(fields: [productId], references: [id])
@@ -543,13 +1062,13 @@ model POItem {
 }
 
 model GoodsReceived {
-  id          String    @id @default(cuid())
-  poId        String
-  storeId     String?
-  supplierId  String?
-  receivedBy  String?
-  notes       String?
-  createdAt   DateTime  @default(now())
+  id         String   @id @default(cuid())
+  poId       String
+  storeId    String?
+  supplierId String?
+  receivedBy String?
+  notes      String?
+  createdAt  DateTime @default(now())
 
   purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id])
   items         GRNItem[]
@@ -567,14 +1086,14 @@ model GRNItem {
   batchNumber String?
   expiryDate  DateTime?
 
-  grn         GoodsReceived @relation(fields: [grnId], references: [id], onDelete: Cascade)
-  product     Product       @relation(fields: [productId], references: [id])
+  grn     GoodsReceived @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id])
 
   @@map("grn_items")
 }
 
 model SupplierPayment {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   supplierId  String
   storeId     String?
   amount      Float
@@ -583,9 +1102,9 @@ model SupplierPayment {
   reference   String?
   notes       String?
   paidBy      String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 
-  supplier    Supplier  @relation(fields: [supplierId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
 
   @@map("supplier_payments")
 }
@@ -602,49 +1121,49 @@ model Shift {
   createdBy String?
   createdAt DateTime    @default(now())
 
-  store       Store       @relation(fields: [storeId], references: [id])
-  staff       Staff       @relation(fields: [staffId], references: [id])
-  createdByUser User?     @relation("ShiftCreatedBy", fields: [createdBy], references: [id])
-  attendance  Attendance[]
+  store         Store        @relation(fields: [storeId], references: [id])
+  staff         Staff        @relation(fields: [staffId], references: [id])
+  createdByUser User?        @relation("ShiftCreatedBy", fields: [createdBy], references: [id])
+  attendance    Attendance[]
 
   @@map("shifts")
 }
 
 model Attendance {
-  id        String            @id @default(cuid())
+  id        String           @id @default(cuid())
   staffId   String
   shiftId   String?
   clockIn   DateTime?
   clockOut  DateTime?
   date      DateTime
-  status    AttendanceStatus  @default(ON_TIME)
+  status    AttendanceStatus @default(ON_TIME)
   notes     String?
-  createdAt DateTime          @default(now())
+  createdAt DateTime         @default(now())
 
-  staff     Staff             @relation(fields: [staffId], references: [id])
-  shift     Shift?            @relation(fields: [shiftId], references: [id])
+  staff Staff  @relation(fields: [staffId], references: [id])
+  shift Shift? @relation(fields: [shiftId], references: [id])
 
   @@map("attendance")
 }
 
 model LeaveRequest {
-  id          String      @id @default(cuid())
-  staffId     String
-  storeId     String?
-  dateFrom    DateTime
-  dateTo      DateTime
-  reason      String?
-  status      LeaveStatus @default(PENDING)
-  approvedBy  String?
-  createdAt   DateTime    @default(now())
+  id         String      @id @default(cuid())
+  staffId    String
+  storeId    String?
+  dateFrom   DateTime
+  dateTo     DateTime
+  reason     String?
+  status     LeaveStatus @default(PENDING)
+  approvedBy String?
+  createdAt  DateTime    @default(now())
 
-  staff       Staff       @relation(fields: [staffId], references: [id])
+  staff Staff @relation(fields: [staffId], references: [id])
 
   @@map("leave_requests")
 }
 
 model AuditLog {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   storeId   String?
   userId    String?
   action    String
@@ -653,10 +1172,10 @@ model AuditLog {
   oldValue  Json?
   newValue  Json?
   ipAddress String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  store     Store?    @relation(fields: [storeId], references: [id])
-  user      User?     @relation(fields: [userId], references: [id])
+  store Store? @relation(fields: [storeId], references: [id])
+  user  User?  @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
 }

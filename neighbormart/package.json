@@ -1,0 +1,18 @@
+{
+  "name": "neighbormart",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["apps/*", "backend"],
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:web\"",
+    "install:all": "npm install && cd backend && npm install && cd ../apps/web && npm install",
+    "db:migrate": "cd backend && npm run db:migrate",
+    "db:seed": "cd backend && npm run db:seed",
+    "db:studio": "cd backend && npm run db:studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

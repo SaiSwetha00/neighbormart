@@ -15,5 +15,12 @@
       "runtimeArgs": ["run", "dev"],
       "port": 5173
     }
+  ,{
+      "name": "NeighborMart Customer App",
+      "cwd": "C:\\swetha-folder\\projects\\Grocery store\\neighbormart\\apps\\customer-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000
+    }
   ]
 }

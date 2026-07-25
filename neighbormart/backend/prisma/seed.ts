@@ -36,22 +36,59 @@ async function cleanup() {
     return;
   }
 
-  // Delete in dependency order (most-derived first)
+  // Delete Phase 2 data first (most-derived)
+  await prisma.notification.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.pOSSession.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.giftCard.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.complaint.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.review.deleteMany({ where: { customer: { storeId: DEMO_STORE_ID } } });
+  await prisma.taxConfig.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.expense.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.coupon.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.promotion.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.referral.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.loyaltyTransaction.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.returnItem.deleteMany({ where: { return: { storeId: DEMO_STORE_ID } } });
+  await prisma.return.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.orderTracking.deleteMany({ where: { order: { storeId: DEMO_STORE_ID } } });
+  await prisma.orderItem.deleteMany({ where: { order: { storeId: DEMO_STORE_ID } } });
+  await prisma.order.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.shoppingListItem.deleteMany({ where: { list: { customer: { storeId: DEMO_STORE_ID } } } });
+  await prisma.shoppingList.deleteMany({ where: { customer: { storeId: DEMO_STORE_ID } } });
+  await prisma.wishlistItem.deleteMany({ where: { wishlist: { customer: { storeId: DEMO_STORE_ID } } } });
+  await prisma.wishlist.deleteMany({ where: { customer: { storeId: DEMO_STORE_ID } } });
+  await prisma.savedAddress.deleteMany({ where: { customer: { storeId: DEMO_STORE_ID } } });
+  await prisma.customer.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+
+  // Delete Phase 1 data
   await prisma.auditLog.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.dailyAudit.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.wasteLog.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.stockAdjustment.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.attendance.deleteMany({ where: { staff: { storeId: DEMO_STORE_ID } } });
   await prisma.shift.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.leaveRequest.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.supplierPayment.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.gRNItem.deleteMany({ where: { grn: { purchaseOrder: { storeId: DEMO_STORE_ID } } } });
   await prisma.goodsReceived.deleteMany({ where: { purchaseOrder: { storeId: DEMO_STORE_ID } } });
+  await prisma.pOItem.deleteMany({ where: { purchaseOrder: { storeId: DEMO_STORE_ID } } });
   await prisma.purchaseOrder.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.productBatch.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.priceHistory.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productSubstitute.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productAllergen.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productDietaryTag.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productNutrition.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productImage.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
+  await prisma.productVariant.deleteMany({ where: { product: { storeId: DEMO_STORE_ID } } });
   await prisma.product.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.category.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.brand.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.supplier.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.manager.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.staff.deleteMany({ where: { storeId: DEMO_STORE_ID } });
+  await prisma.loginHistory.deleteMany({ where: { user: { storeId: DEMO_STORE_ID } } });
+  await prisma.session.deleteMany({ where: { user: { storeId: DEMO_STORE_ID } } });
   await prisma.user.deleteMany({ where: { storeId: DEMO_STORE_ID } });
   await prisma.store.delete({ where: { id: DEMO_STORE_ID } });
 
@@ -821,6 +858,175 @@ async function main() {
   console.log('  Out of stock : Tomato Soup 400g (0 units)');
   console.log('  Low stock    : Baby Spinach 200g (8/10), Vitamin C 60 tabs (7/10), Cheddar Cheese 200g (9/10)');
   console.log('  Expiring <7d : Baby Spinach (2d), Whole Milk (3d), Chicken Breast (4d), Cheddar Cheese (5d), Greek Yogurt (6d)');
+  console.log('');
+
+  // ── Phase 2 Seed Data ───────────────────────────────────────────────────────
+
+  console.log('Creating Phase 2 seed data...');
+
+  // Customer users
+  const customerInputs = [
+    { name: 'Lisa Park', email: 'customer1@demo.com', phone: '555-0201', tier: 'PLATINUM' as const, loyaltyPoints: 3200, totalSpend: 1850.00, totalOrders: 42 },
+    { name: 'David Kim', email: 'customer2@demo.com', phone: '555-0202', tier: 'GOLD' as const, loyaltyPoints: 880, totalSpend: 640.00, totalOrders: 18 },
+    { name: 'Maria Rodriguez', email: 'customer3@demo.com', phone: '555-0203', tier: 'SILVER' as const, loyaltyPoints: 210, totalSpend: 145.00, totalOrders: 6 },
+    { name: 'Tom Bradley', email: 'customer4@demo.com', phone: '555-0204', tier: 'GOLD' as const, loyaltyPoints: 650, totalSpend: 520.00, totalOrders: 14 },
+  ];
+
+  const customerRecords: { userId: string; customerId: string; name: string }[] = [];
+  for (const c of customerInputs) {
+    const u = await prisma.user.create({
+      data: { storeId: store.id, name: c.name, email: c.email, phone: c.phone, password: passwordHash, role: 'CUSTOMER' },
+    });
+    const cust = await prisma.customer.create({
+      data: { userId: u.id, storeId: store.id, loyaltyPoints: c.loyaltyPoints, tier: c.tier, totalSpend: c.totalSpend, totalOrders: c.totalOrders },
+    });
+    customerRecords.push({ userId: u.id, customerId: cust.id, name: c.name });
+  }
+  console.log(`  Created ${customerRecords.length} customers`);
+
+  // Get a product list for orders (we need product IDs from the already-created products)
+  const productList = await prisma.product.findMany({ where: { storeId: store.id, stockQty: { gt: 0 } }, select: { id: true, name: true, sellingPrice: true }, take: 8 });
+
+  // Sample orders (last 30 days)
+  const staffUser = await prisma.user.findFirst({ where: { storeId: store.id, role: 'STAFF' } });
+  const cashierId = staffUser?.id;
+
+  const orderDates = [-1, -2, -3, -5, -7, -9, -11, -14, -16, -18, -20, -22, -25, -27, -29].map(d => addDays(now, d));
+  let orderCount = 0;
+  for (let i = 0; i < orderDates.length; i++) {
+    const custRecord = customerRecords[i % customerRecords.length];
+    const item1 = productList[i % productList.length];
+    const item2 = productList[(i + 1) % productList.length];
+    const qty1 = (i % 3) + 1;
+    const qty2 = (i % 2) + 1;
+    const subtotal = item1.sellingPrice * qty1 + item2.sellingPrice * qty2;
+    const taxAmount = subtotal * 0.08;
+    const total = subtotal + taxAmount;
+    const cashTendered = Math.ceil(total / 5) * 5;
+
+    await prisma.order.create({
+      data: {
+        storeId: store.id,
+        customerId: custRecord.customerId,
+        cashierId,
+        type: i % 3 === 0 ? 'DELIVERY' : 'IN_STORE',
+        status: i < 3 ? 'PENDING' : 'DELIVERED',
+        subtotal,
+        taxAmount,
+        total,
+        paymentMethod: 'CASH',
+        cashTendered,
+        changeGiven: cashTendered - total,
+        createdAt: orderDates[i],
+        updatedAt: orderDates[i],
+        items: {
+          create: [
+            { productId: item1.id, productName: item1.name, quantity: qty1, unitPrice: item1.sellingPrice, subtotal: item1.sellingPrice * qty1 },
+            { productId: item2.id, productName: item2.name, quantity: qty2, unitPrice: item2.sellingPrice, subtotal: item2.sellingPrice * qty2 },
+          ],
+        },
+        tracking: { create: { status: i < 3 ? 'PENDING' : 'DELIVERED', note: i < 3 ? 'Order received' : 'Delivered to customer', timestamp: orderDates[i] } },
+      },
+    });
+    orderCount++;
+  }
+  console.log(`  Created ${orderCount} orders`);
+
+  // Promotions
+  await prisma.promotion.createMany({
+    data: [
+      { storeId: store.id, name: 'Weekend Sale 20% Off', type: 'PERCENTAGE', discountValue: 20, minOrderAmount: 15, appliesTo: 'ALL', startDate: addDays(now, -2), endDate: addDays(now, 5), status: 'ACTIVE', usedCount: 8 },
+      { storeId: store.id, name: '$5 Off Orders Over $30', type: 'FIXED', discountValue: 5, minOrderAmount: 30, appliesTo: 'ALL', startDate: addDays(now, -7), endDate: addDays(now, 14), status: 'ACTIVE', usedCount: 3 },
+      { storeId: store.id, name: 'Next Week Flash Sale', type: 'PERCENTAGE', discountValue: 15, minOrderAmount: 0, appliesTo: 'ALL', startDate: addDays(now, 3), endDate: addDays(now, 10), status: 'SCHEDULED', usedCount: 0 },
+    ],
+  });
+  console.log('  Created promotions');
+
+  // Coupons
+  await prisma.coupon.createMany({
+    data: [
+      { storeId: store.id, code: 'WELCOME10', type: 'PERCENTAGE', value: 10, minOrder: 0, usageLimit: 100, usedCount: 22, status: 'ACTIVE' },
+      { storeId: store.id, code: 'SAVE5NOW', type: 'FIXED', value: 5, minOrder: 25, usageLimit: 50, usedCount: 11, status: 'ACTIVE' },
+      { storeId: store.id, code: 'SUMMER20', type: 'PERCENTAGE', value: 20, minOrder: 40, usageLimit: 30, usedCount: 30, expiryDate: addDays(now, -1), status: 'EXPIRED' },
+    ],
+  });
+  console.log('  Created coupons');
+
+  // Expenses
+  const loggedByUserId = ownerUser.id;
+  await prisma.expense.createMany({
+    data: [
+      { storeId: store.id, category: 'Utilities', amount: 320.00, description: 'Monthly electricity bill', loggedBy: loggedByUserId, status: 'APPROVED', date: addDays(now, -5), approvedBy: loggedByUserId },
+      { storeId: store.id, category: 'Rent', amount: 2500.00, description: 'Monthly store rent', loggedBy: loggedByUserId, status: 'APPROVED', date: addDays(now, -3), approvedBy: loggedByUserId },
+      { storeId: store.id, category: 'Supplies', amount: 85.50, description: 'Cleaning supplies and packaging', loggedBy: loggedByUserId, status: 'PENDING', date: addDays(now, -1) },
+      { storeId: store.id, category: 'Marketing', amount: 150.00, description: 'Social media ads', loggedBy: loggedByUserId, status: 'APPROVED', date: addDays(now, -10), approvedBy: loggedByUserId },
+      { storeId: store.id, category: 'Utilities', amount: 95.00, description: 'Water bill', loggedBy: loggedByUserId, status: 'APPROVED', date: addDays(now, -8), approvedBy: loggedByUserId },
+    ],
+  });
+  console.log('  Created expenses');
+
+  // Gift Cards
+  await prisma.giftCard.createMany({
+    data: [
+      { storeId: store.id, code: 'GC-DEMO0001', originalValue: 50, currentBalance: 35.50, status: 'ACTIVE', expiryDate: addDays(now, 180) },
+      { storeId: store.id, code: 'GC-DEMO0002', originalValue: 25, currentBalance: 0, status: 'USED' },
+      { storeId: store.id, code: 'GC-DEMO0003', originalValue: 100, currentBalance: 100, status: 'ACTIVE', expiryDate: addDays(now, 365) },
+    ],
+  });
+  console.log('  Created gift cards');
+
+  // Loyalty transactions for first customer
+  const firstCustomer = customerRecords[0];
+  await prisma.loyaltyTransaction.createMany({
+    data: [
+      { customerId: firstCustomer.customerId, storeId: store.id, type: 'EARNED', points: 185, description: 'Purchase reward', createdAt: addDays(now, -7) },
+      { customerId: firstCustomer.customerId, storeId: store.id, type: 'EARNED', points: 240, description: 'Purchase reward', createdAt: addDays(now, -14) },
+      { customerId: firstCustomer.customerId, storeId: store.id, type: 'REDEEMED', points: -100, description: 'Points redeemed for discount', createdAt: addDays(now, -3) },
+      { customerId: firstCustomer.customerId, storeId: store.id, type: 'BONUS', points: 500, description: 'Birthday bonus', createdAt: addDays(now, -1) },
+    ],
+  });
+  console.log('  Created loyalty transactions');
+
+  // Complaints
+  await prisma.complaint.create({
+    data: {
+      customerId: customerRecords[1].customerId,
+      storeId: store.id,
+      type: 'Product Quality',
+      description: 'The bread I purchased was stale and the expiry date was tomorrow.',
+      status: 'OPEN',
+    },
+  });
+  await prisma.complaint.create({
+    data: {
+      customerId: customerRecords[2].customerId,
+      storeId: store.id,
+      type: 'Delivery Issue',
+      description: 'My order arrived 2 hours late and some items were missing.',
+      status: 'RESOLVED',
+      resolvedBy: ownerUser.id,
+      resolutionNote: 'Apologized and issued a $10 coupon for the inconvenience.',
+    },
+  });
+  console.log('  Created complaints');
+
+  // Notifications
+  await prisma.notification.createMany({
+    data: [
+      { storeId: store.id, type: 'LOW_STOCK', title: 'Low Stock Alert', message: 'Baby Spinach 200g is running low (8 units remaining)', isRead: false },
+      { storeId: store.id, type: 'NEW_ORDER', title: 'New Delivery Order', message: 'Lisa Park placed a new delivery order worth $45.20', isRead: false },
+      { storeId: store.id, type: 'COMPLAINT', title: 'New Customer Complaint', message: 'A new complaint was submitted about product quality', isRead: true },
+    ],
+  });
+  console.log('  Created notifications\n');
+
+  console.log('========================================');
+  console.log('  Phase 2 seed complete!');
+  console.log('========================================\n');
+  console.log('Demo customers:');
+  for (const c of customerInputs) {
+    console.log(`  ${c.tier} | ${c.name} <${c.email}> | ${c.loyaltyPoints} pts`);
+  }
   console.log('');
 }
 

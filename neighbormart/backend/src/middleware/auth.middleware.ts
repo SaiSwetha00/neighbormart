@@ -7,6 +7,38 @@ export interface AuthRequest extends Request {
   user?: JwtPayload;
 }
 
+export const customerAuthenticate = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token =
+      req.cookies?.customerAccessToken ||
+      req.headers.authorization?.replace('Bearer ', '');
+
+    if (!token) {
+      return sendError(res, 'Authentication required', 401);
+    }
+
+    const payload = verifyAccessToken(token);
+
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, status: true, storeId: true, role: true },
+    });
+
+    if (!user || user.status !== 'ACTIVE') {
+      return sendError(res, 'Account suspended or not found', 401);
+    }
+
+    req.user = payload;
+    next();
+  } catch {
+    return sendError(res, 'Invalid or expired token', 401);
+  }
+};
+
 export const authenticate = async (
   req: AuthRequest,
   res: Response,
