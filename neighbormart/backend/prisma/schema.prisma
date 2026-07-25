@@ -1,0 +1,662 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+  CUSTOMER
+  DRIVER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+enum StaffPosition {
+  CASHIER
+  STOCK
+  SUPERVISOR
+  DELI
+  BAKER
+}
+
+enum ShiftType {
+  MORNING
+  EVENING
+  FULL_DAY
+  SPLIT
+}
+
+enum StorageType {
+  AMBIENT
+  REFRIGERATED
+  FROZEN
+}
+
+enum ProductStatus {
+  ACTIVE
+  DISCONTINUED
+}
+
+enum POStatus {
+  DRAFT
+  SENT
+  RECEIVED
+  PARTIAL
+  CANCELLED
+}
+
+enum AdjustmentType {
+  ADD
+  REMOVE
+}
+
+enum WasteReason {
+  EXPIRED
+  DAMAGED
+  STOLEN
+  OTHER
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  ON_TIME
+  LATE
+  ABSENT
+}
+
+enum ShiftStatus {
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum Allergen {
+  NUTS
+  DAIRY
+  GLUTEN
+  EGGS
+  SOY
+  SHELLFISH
+  WHEAT
+  PEANUTS
+}
+
+enum DietaryTag {
+  VEGAN
+  VEGETARIAN
+  HALAL
+  KOSHER
+  ORGANIC
+  SUGAR_FREE
+  KETO
+  GLUTEN_FREE
+}
+
+model Store {
+  id                  String    @id @default(cuid())
+  name                String
+  logo                String?
+  address             String?
+  city                String?
+  country             String    @default("US")
+  currency            String    @default("USD")
+  timezone            String    @default("America/New_York")
+  lowStockThreshold   Int       @default(10)
+  salesGoal           Float     @default(0)
+  status              String    @default("ACTIVE")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  users               User[]
+  staff               Staff[]
+  managers            Manager[]
+  products            Product[]
+  categories          Category[]
+  brands              Brand[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  shifts              Shift[]
+  stockAdjustments    StockAdjustment[]
+  wasteLogs           WasteLog[]
+  dailyAudits         DailyAudit[]
+  auditLogs           AuditLog[]
+
+  @@map("stores")
+}
+
+model User {
+  id          String      @id @default(cuid())
+  storeId     String
+  name        String
+  email       String      @unique @db.VarChar(320)
+  phone       String?
+  password    String      @db.VarChar(256)
+  role        UserRole    @default(STAFF)
+  photo       String?
+  status      UserStatus  @default(ACTIVE)
+  mfaEnabled  Boolean     @default(false)
+  mfaSecret   String?
+  lastLogin   DateTime?
+  failedLogins Int        @default(0)
+  lockedUntil DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  store           Store           @relation(fields: [storeId], references: [id])
+  sessions        Session[]
+  loginHistory    LoginHistory[]
+  staff           Staff?
+  manager         Manager?
+  auditLogs       AuditLog[]
+  stockAdjustments StockAdjustment[]
+  wasteLogs       WasteLog[]
+  shiftsCreated   Shift[]         @relation("ShiftCreatedBy")
+  priceHistory    PriceHistory[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique @db.VarChar(512)
+  ipAddress String?
+  device    String?   @db.VarChar(512)
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model LoginHistory {
+  id        String    @id @default(cuid())
+  userId    String
+  ipAddress String?
+  device    String?
+  location  String?
+  status    String
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("login_history")
+}
+
+model Staff {
+  id          String        @id @default(cuid())
+  userId      String        @unique
+  storeId     String
+  employeeId  String        @unique
+  position    StaffPosition @default(CASHIER)
+  shiftType   ShiftType     @default(MORNING)
+  dateJoined  DateTime      @default(now())
+  notes       String?
+  status      UserStatus    @default(ACTIVE)
+  createdBy   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  user            User            @relation(fields: [userId], references: [id])
+  store           Store           @relation(fields: [storeId], references: [id])
+  shifts          Shift[]
+  attendance      Attendance[]
+  leaveRequests   LeaveRequest[]
+
+  @@map("staff")
+}
+
+model Manager {
+  id          String      @id @default(cuid())
+  userId      String      @unique
+  storeId     String
+  assignedBy  String?
+  permissions Json        @default("{}")
+  status      UserStatus  @default(ACTIVE)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id])
+  store       Store       @relation(fields: [storeId], references: [id])
+
+  @@map("managers")
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  storeId   String
+  name      String
+  logo      String?
+  createdAt DateTime  @default(now())
+
+  store     Store     @relation(fields: [storeId], references: [id])
+  products  Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id        String      @id @default(cuid())
+  storeId   String
+  name      String
+  icon      String?
+  image     String?
+  parentId  String?
+  sortOrder Int         @default(0)
+  createdAt DateTime    @default(now())
+
+  store     Store       @relation(fields: [storeId], references: [id])
+  parent    Category?   @relation("CategoryParent", fields: [parentId], references: [id])
+  children  Category[]  @relation("CategoryParent")
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                  String        @id @default(cuid())
+  storeId             String
+  name                String
+  description         String?
+  sku                 String        @unique
+  barcode             String?       @unique
+  categoryId          String?
+  brandId             String?
+  purchasePrice       Float         @default(0)
+  sellingPrice        Float         @default(0)
+  wholesalePrice      Float?
+  taxRate             Float         @default(0)
+  stockQty            Int           @default(0)
+  lowStockThreshold   Int           @default(10)
+  storageType         StorageType   @default(AMBIENT)
+  aisle               String?
+  shelfNumber         String?
+  shelfRow            String?
+  countryOfOrigin     String?
+  isPerishable        Boolean       @default(false)
+  isOrganic           Boolean       @default(false)
+  isVegan             Boolean       @default(false)
+  isGlutenFree        Boolean       @default(false)
+  isHalal             Boolean       @default(false)
+  isKosher            Boolean       @default(false)
+  seasonalStart       DateTime?
+  seasonalEnd         DateTime?
+  availableFromTime   String?
+  unitOfMeasure       String        @default("unit")
+  packSize            Int           @default(1)
+  packageType         String?
+  isRecyclable        Boolean       @default(false)
+  status              ProductStatus @default(ACTIVE)
+  createdBy           String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  store               Store                 @relation(fields: [storeId], references: [id])
+  category            Category?             @relation(fields: [categoryId], references: [id])
+  brand               Brand?                @relation(fields: [brandId], references: [id])
+  images              ProductImage[]
+  variants            ProductVariant[]
+  nutrition           ProductNutrition?
+  allergens           ProductAllergen[]
+  dietaryTags         ProductDietaryTag[]
+  batches             ProductBatch[]
+  priceHistory        PriceHistory[]
+  substitutes         ProductSubstitute[]   @relation("ProductSubstitutes")
+  substitutedBy       ProductSubstitute[]   @relation("SubstituteProducts")
+  stockAdjustments    StockAdjustment[]
+  wasteLogs           WasteLog[]
+  poItems             POItem[]
+  grnItems            GRNItem[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String    @id @default(cuid())
+  productId   String
+  name        String
+  sku         String    @unique
+  barcode     String?
+  sellingPrice Float
+  stockQty    Int       @default(0)
+  unit        String?
+  createdAt   DateTime  @default(now())
+
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String    @id @default(cuid())
+  productId String
+  url       String
+  position  Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
+}
+
+model ProductNutrition {
+  id              String    @id @default(cuid())
+  productId       String    @unique
+  calories        Float?
+  fat             Float?
+  protein         Float?
+  carbs           Float?
+  sugar           Float?
+  fiber           Float?
+  sodium          Float?
+  servingSize     String?
+  servingsPerPack Float?
+  ingredients     String?
+
+  product         Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_nutrition")
+}
+
+model ProductAllergen {
+  id        String    @id @default(cuid())
+  productId String
+  allergen  Allergen
+
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, allergen])
+  @@map("product_allergens")
+}
+
+model ProductDietaryTag {
+  id        String      @id @default(cuid())
+  productId String
+  tag       DietaryTag
+
+  product   Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, tag])
+  @@map("product_dietary_tags")
+}
+
+model ProductBatch {
+  id          String    @id @default(cuid())
+  productId   String
+  batchNumber String
+  expiryDate  DateTime?
+  quantity    Int
+  receivedAt  DateTime  @default(now())
+  supplierId  String?
+
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_batches")
+}
+
+model PriceHistory {
+  id          String    @id @default(cuid())
+  productId   String
+  oldPrice    Float
+  newPrice    Float
+  changedBy   String
+  changedAt   DateTime  @default(now())
+  reason      String?
+
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [changedBy], references: [id])
+
+  @@map("price_history")
+}
+
+model ProductSubstitute {
+  id                    String    @id @default(cuid())
+  productId             String
+  substituteProductId   String
+  createdAt             DateTime  @default(now())
+
+  product               Product   @relation("ProductSubstitutes", fields: [productId], references: [id], onDelete: Cascade)
+  substituteProduct     Product   @relation("SubstituteProducts", fields: [substituteProductId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, substituteProductId])
+  @@map("product_substitutes")
+}
+
+model StockAdjustment {
+  id          String          @id @default(cuid())
+  productId   String
+  storeId     String
+  type        AdjustmentType
+  quantity    Int
+  reason      String?
+  adjustedBy  String
+  createdAt   DateTime        @default(now())
+
+  product     Product         @relation(fields: [productId], references: [id])
+  store       Store           @relation(fields: [storeId], references: [id])
+  user        User            @relation(fields: [adjustedBy], references: [id])
+
+  @@map("stock_adjustments")
+}
+
+model WasteLog {
+  id              String      @id @default(cuid())
+  productId       String
+  storeId         String
+  quantity        Int
+  reason          WasteReason
+  financialValue  Float?
+  loggedBy        String
+  createdAt       DateTime    @default(now())
+
+  product         Product     @relation(fields: [productId], references: [id])
+  store           Store       @relation(fields: [storeId], references: [id])
+  user            User        @relation(fields: [loggedBy], references: [id])
+
+  @@map("waste_logs")
+}
+
+model DailyAudit {
+  id              String    @id @default(cuid())
+  storeId         String
+  date            DateTime  @default(now())
+  status          String    @default("PENDING")
+  completedBy     String?
+  discrepancies   Json?
+  createdAt       DateTime  @default(now())
+
+  store           Store     @relation(fields: [storeId], references: [id])
+
+  @@map("daily_audits")
+}
+
+model Supplier {
+  id              String    @id @default(cuid())
+  storeId         String
+  name            String
+  contactPerson   String?
+  phone           String?
+  email           String?
+  address         String?
+  paymentTerms    String?
+  leadTimeDays    Int       @default(3)
+  rating          Float     @default(0)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  store           Store             @relation(fields: [storeId], references: [id])
+  purchaseOrders  PurchaseOrder[]
+  payments        SupplierPayment[]
+
+  @@map("suppliers")
+}
+
+model PurchaseOrder {
+  id            String    @id @default(cuid())
+  storeId       String
+  supplierId    String
+  status        POStatus  @default(DRAFT)
+  expectedDate  DateTime?
+  notes         String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  store         Store         @relation(fields: [storeId], references: [id])
+  supplier      Supplier      @relation(fields: [supplierId], references: [id])
+  items         POItem[]
+  goodsReceived GoodsReceived[]
+
+  @@map("purchase_orders")
+}
+
+model POItem {
+  id          String    @id @default(cuid())
+  poId        String
+  productId   String
+  quantity    Int
+  unitPrice   Float
+  receivedQty Int       @default(0)
+
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id])
+
+  @@map("po_items")
+}
+
+model GoodsReceived {
+  id          String    @id @default(cuid())
+  poId        String
+  storeId     String?
+  supplierId  String?
+  receivedBy  String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  purchaseOrder PurchaseOrder @relation(fields: [poId], references: [id])
+  items         GRNItem[]
+
+  @@map("goods_received")
+}
+
+model GRNItem {
+  id          String    @id @default(cuid())
+  grnId       String
+  productId   String
+  orderedQty  Int
+  receivedQty Int
+  discrepancy Int       @default(0)
+  batchNumber String?
+  expiryDate  DateTime?
+
+  grn         GoodsReceived @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  product     Product       @relation(fields: [productId], references: [id])
+
+  @@map("grn_items")
+}
+
+model SupplierPayment {
+  id          String    @id @default(cuid())
+  supplierId  String
+  storeId     String?
+  amount      Float
+  paymentDate DateTime
+  method      String?
+  reference   String?
+  notes       String?
+  paidBy      String?
+  createdAt   DateTime  @default(now())
+
+  supplier    Supplier  @relation(fields: [supplierId], references: [id])
+
+  @@map("supplier_payments")
+}
+
+model Shift {
+  id        String      @id @default(cuid())
+  storeId   String
+  staffId   String
+  date      DateTime
+  shiftType ShiftType   @default(MORNING)
+  startTime String
+  endTime   String
+  status    ShiftStatus @default(SCHEDULED)
+  createdBy String?
+  createdAt DateTime    @default(now())
+
+  store       Store       @relation(fields: [storeId], references: [id])
+  staff       Staff       @relation(fields: [staffId], references: [id])
+  createdByUser User?     @relation("ShiftCreatedBy", fields: [createdBy], references: [id])
+  attendance  Attendance[]
+
+  @@map("shifts")
+}
+
+model Attendance {
+  id        String            @id @default(cuid())
+  staffId   String
+  shiftId   String?
+  clockIn   DateTime?
+  clockOut  DateTime?
+  date      DateTime
+  status    AttendanceStatus  @default(ON_TIME)
+  notes     String?
+  createdAt DateTime          @default(now())
+
+  staff     Staff             @relation(fields: [staffId], references: [id])
+  shift     Shift?            @relation(fields: [shiftId], references: [id])
+
+  @@map("attendance")
+}
+
+model LeaveRequest {
+  id          String      @id @default(cuid())
+  staffId     String
+  storeId     String?
+  dateFrom    DateTime
+  dateTo      DateTime
+  reason      String?
+  status      LeaveStatus @default(PENDING)
+  approvedBy  String?
+  createdAt   DateTime    @default(now())
+
+  staff       Staff       @relation(fields: [staffId], references: [id])
+
+  @@map("leave_requests")
+}
+
+model AuditLog {
+  id        String    @id @default(cuid())
+  storeId   String?
+  userId    String?
+  action    String
+  module    String
+  recordId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  createdAt DateTime  @default(now())
+
+  store     Store?    @relation(fields: [storeId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
