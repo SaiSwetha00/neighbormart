@@ -85,3 +85,41 @@
   .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
   .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
 }
+
+/* ── Accessibility: High Contrast Mode ──────────────────────────────────── */
+.high-contrast {
+  --foreground: 0 0 0;
+  --background: 255 255 255;
+  --border: 0 0 0;
+}
+.high-contrast.dark {
+  --foreground: 255 255 255;
+  --background: 0 0 0;
+  --border: 255 255 255;
+}
+.high-contrast * {
+  border-color: currentColor !important;
+}
+.high-contrast button, .high-contrast a {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ── Accessibility: Reduce Motion ────────────────────────────────────────── */
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* ── Focus visible ring (WCAG 2.1) ───────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #1B4332;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── RTL support ─────────────────────────────────────────────────────────── */
+[dir="rtl"] .sidebar-nav { direction: rtl; }
+[dir="rtl"] .flex { flex-direction: row-reverse; }
+[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }

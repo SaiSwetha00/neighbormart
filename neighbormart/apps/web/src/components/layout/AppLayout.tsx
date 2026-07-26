@@ -11,6 +11,11 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-[#0F172A]">
+      {/* Skip-to-content link (WCAG 2.1) */}
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-white focus:text-[#1B4332] focus:font-semibold focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#1B4332]">
+        Skip to main content
+      </a>
+
       {/* Sidebar */}
       <Sidebar />
 
@@ -19,6 +24,9 @@ export function AppLayout() {
 
       {/* Main content area */}
       <main
+        id="main-content"
+        role="main"
+        aria-label="Main content"
         className={cn(
           'flex min-h-screen flex-col pt-16 transition-all duration-200',
           'lg:pl-16',

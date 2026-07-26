@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "products": "उत्पाद",
+    "categories": "श्रेणियाँ और ब्रांड",
+    "inventory": "इन्वेंट्री",
+    "suppliers": "आपूर्तिकर्ता",
+    "sales": "बिक्री",
+    "finance": "वित्त",
+    "promotions": "प्रमोशन",
+    "customers": "ग्राहक",
+    "team": "टीम",
+    "schedule": "शेड्यूल",
+    "auditLog": "ऑडिट लॉग",
+    "reports": "रिपोर्ट",
+    "ai": "AI केंद्र",
+    "delivery": "डिलीवरी",
+    "marketing": "मार्केटिंग",
+    "settings": "सेटिंग्स"
+  },
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "create": "बनाएं",
+    "search": "खोजें",
+    "filter": "फ़िल्टर",
+    "loading": "लोड हो रहा है…",
+    "noData": "कोई डेटा नहीं मिला",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "status": "स्थिति",
+    "actions": "कार्रवाई",
+    "name": "नाम",
+    "email": "ईमेल",
+    "phone": "फ़ोन",
+    "date": "तारीख",
+    "total": "कुल",
+    "quantity": "मात्रा"
+  },
+  "auth": {
+    "login": "साइन इन करें",
+    "logout": "साइन आउट करें",
+    "email": "ईमेल पता",
+    "password": "पासवर्ड",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "signingIn": "साइन इन हो रहा है…"
+  },
+  "dashboard": {
+    "totalRevenue": "कुल राजस्व",
+    "totalOrders": "कुल ऑर्डर",
+    "totalCustomers": "कुल ग्राहक",
+    "lowStockAlerts": "कम स्टॉक अलर्ट"
+  },
+  "marketing": {
+    "title": "मार्केटिंग और अभियान",
+    "campaigns": "अभियान",
+    "abTesting": "A/B परीक्षण",
+    "referral": "रेफरल",
+    "flashSales": "फ्लैश सेल",
+    "newCampaign": "नया अभियान",
+    "launch": "लॉन्च करें",
+    "pause": "रोकें",
+    "sent": "भेजा",
+    "opened": "खोला",
+    "clicked": "क्लिक",
+    "openRate": "ओपन दर"
+  },
+  "accessibility": {
+    "fontSize": "फ़ॉन्ट आकार",
+    "small": "छोटा",
+    "medium": "मध्यम",
+    "large": "बड़ा",
+    "extraLarge": "अत्यंत बड़ा",
+    "highContrast": "उच्च कंट्रास्ट",
+    "reduceMotion": "गति कम करें",
+    "skipToContent": "मुख्य सामग्री पर जाएं"
+  }
+}

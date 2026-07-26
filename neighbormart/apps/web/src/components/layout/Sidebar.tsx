@@ -22,7 +22,10 @@ import {
   FileBarChart,
   Bot,
   MapPin,
+  Megaphone,
 } from 'lucide-react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AccessibilityControls from '@/components/AccessibilityControls';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
 import { useUIStore } from '@/stores/ui.store';
@@ -55,6 +58,7 @@ const ownerNav: NavItem[] = [
   { path: '/owner/reports', icon: FileBarChart, label: 'Reports' },
   { path: '/owner/ai', icon: Bot, label: 'AI Center' },
   { path: '/owner/delivery', icon: MapPin, label: 'Delivery' },
+  { path: '/owner/marketing', icon: Megaphone, label: 'Marketing' },
   { path: '/owner/settings', icon: Settings, label: 'Settings' },
 ];
 
@@ -227,6 +231,14 @@ export function Sidebar() {
             ))}
           </ul>
         </nav>
+
+        {/* i18n + Accessibility row */}
+        {!isCollapsed && (
+          <div className="flex items-center justify-end gap-1 px-3 pb-1">
+            <LanguageSwitcher />
+            <AccessibilityControls />
+          </div>
+        )}
 
         {/* Footer: User info + logout */}
         <div className="flex-shrink-0 border-t border-gray-200 dark:border-gray-800 p-3">

@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "products": "Productos",
+    "categories": "Categorías y Marcas",
+    "inventory": "Inventario",
+    "suppliers": "Proveedores",
+    "sales": "Ventas",
+    "finance": "Finanzas",
+    "promotions": "Promociones",
+    "customers": "Clientes",
+    "team": "Equipo",
+    "schedule": "Horario",
+    "auditLog": "Registro de Auditoría",
+    "reports": "Informes",
+    "ai": "Centro IA",
+    "delivery": "Entrega",
+    "marketing": "Marketing",
+    "settings": "Configuración"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "create": "Crear",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "loading": "Cargando…",
+    "noData": "No se encontraron datos",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "status": "Estado",
+    "actions": "Acciones",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "date": "Fecha",
+    "total": "Total",
+    "quantity": "Cantidad"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signingIn": "Iniciando sesión…"
+  },
+  "dashboard": {
+    "totalRevenue": "Ingresos Totales",
+    "totalOrders": "Pedidos Totales",
+    "totalCustomers": "Clientes Totales",
+    "lowStockAlerts": "Alertas de Bajo Stock"
+  },
+  "marketing": {
+    "title": "Marketing y Campañas",
+    "campaigns": "Campañas",
+    "abTesting": "Pruebas A/B",
+    "referral": "Referidos",
+    "flashSales": "Ventas Flash",
+    "newCampaign": "Nueva Campaña",
+    "launch": "Lanzar",
+    "pause": "Pausar",
+    "sent": "Enviados",
+    "opened": "Abiertos",
+    "clicked": "Clics",
+    "openRate": "Tasa de Apertura"
+  },
+  "accessibility": {
+    "fontSize": "Tamaño de Fuente",
+    "small": "Pequeño",
+    "medium": "Mediano",
+    "large": "Grande",
+    "extraLarge": "Extra Grande",
+    "highContrast": "Alto Contraste",
+    "reduceMotion": "Reducir Movimiento",
+    "skipToContent": "Ir al contenido principal"
+  }
+}

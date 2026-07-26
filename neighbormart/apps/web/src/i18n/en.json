@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "categories": "Categories & Brands",
+    "inventory": "Inventory",
+    "suppliers": "Suppliers",
+    "sales": "Sales",
+    "finance": "Finance",
+    "promotions": "Promotions",
+    "customers": "Customers",
+    "team": "Team",
+    "schedule": "Schedule",
+    "auditLog": "Audit Log",
+    "reports": "Reports",
+    "ai": "AI Center",
+    "delivery": "Delivery",
+    "marketing": "Marketing",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading…",
+    "noData": "No data found",
+    "active": "Active",
+    "inactive": "Inactive",
+    "status": "Status",
+    "actions": "Actions",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "date": "Date",
+    "total": "Total",
+    "quantity": "Quantity"
+  },
+  "auth": {
+    "login": "Sign In",
+    "logout": "Log Out",
+    "email": "Email address",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "signingIn": "Signing in…"
+  },
+  "dashboard": {
+    "totalRevenue": "Total Revenue",
+    "totalOrders": "Total Orders",
+    "totalCustomers": "Total Customers",
+    "lowStockAlerts": "Low Stock Alerts"
+  },
+  "marketing": {
+    "title": "Marketing & Campaigns",
+    "campaigns": "Campaigns",
+    "abTesting": "A/B Testing",
+    "referral": "Referral",
+    "flashSales": "Flash Sales",
+    "newCampaign": "New Campaign",
+    "launch": "Launch",
+    "pause": "Pause",
+    "sent": "Sent",
+    "opened": "Opened",
+    "clicked": "Clicked",
+    "openRate": "Open Rate"
+  },
+  "accessibility": {
+    "fontSize": "Font Size",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large",
+    "extraLarge": "Extra Large",
+    "highContrast": "High Contrast",
+    "reduceMotion": "Reduce Motion",
+    "skipToContent": "Skip to main content"
+  }
+}

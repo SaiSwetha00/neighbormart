@@ -30,6 +30,8 @@ import analyticsRoutes from './modules/analytics/analytics.routes';
 import deliveryRoutes from './modules/delivery/delivery.routes';
 import driverRoutes from './modules/driver/driver.routes';
 import routesRoutes from './modules/routes/routes.routes';
+import marketingRoutes from './modules/marketing/marketing.routes';
+import adminRoutes from './modules/admin/admin.routes';
 
 const app = express();
 
@@ -89,6 +91,8 @@ app.use('/api', analyticsRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/driver', driverRoutes);
 app.use('/api/routes', routesRoutes);
+app.use('/api', marketingRoutes);
+app.use('/api', adminRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

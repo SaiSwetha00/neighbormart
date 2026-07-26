@@ -10,12 +10,13 @@ A full-stack grocery store management platform for owners, managers, staff, cust
 | **Phase 2** | ✅ Complete | POS, sales analytics, finance, CRM, promotions, customer app |
 | **Phase 3** | ✅ Complete | AI agent (mock), visual search, advanced analytics & reports |
 | **Phase 4** | ✅ Complete | Delivery system, driver app, route optimization, real-time tracking |
+| **Phase 5** | ✅ Complete | Marketing, multi-language i18n, accessibility, dark mode, super admin, security |
 
 ## Tech Stack
 
-**Frontend** — React 18, TypeScript, Vite, Tailwind CSS, Radix UI, React Query, Zustand, Recharts
+**Frontend** — React 18, TypeScript, Vite, Tailwind CSS, Radix UI, React Query, Zustand, Recharts, i18next (5 languages)
 
-**Backend** — Node.js, Express, TypeScript, Prisma ORM, MySQL, Socket.io, node-cron
+**Backend** — Node.js, Express, TypeScript, Prisma ORM, MySQL, Socket.io, node-cron, Helmet, express-rate-limit, Winston
 
 **AI** — Smart mock AI engine (real DB data) · Drop-in replacement for Claude API (`claude-sonnet-4-6`)
 
@@ -58,6 +59,36 @@ A full-stack grocery store management platform for owners, managers, staff, cust
 - **Driver ratings** — customers rate drivers after delivery; driver average auto-updates
 - **Socket.io events** — `driver-online/offline`, `driver-location`, `delivery-assigned`, `new-delivery`, `order-status-update`, `delivery-update`; rooms scoped to `store:`, `driver:`, `order:`
 - **Seed credentials** — `driver@neighbormart.com / password123`
+
+### Phase 5 — Marketing, i18n, Accessibility, Super Admin & Security ✅
+- **Marketing & Campaigns** (Module 22) — campaign CRUD, A/B testing, referral stats, flash sales
+  - Campaign types: EMAIL, SMS, PUSH, FLASH_SALE — target by customer tier
+  - A/B test creator with configurable traffic split
+  - Launch, pause, delete campaigns; open-rate analytics
+- **Multi-Language i18n** (Module 23) — English, Spanish, French, Arabic (RTL), Hindi
+  - Language switcher with flag icons in sidebar; persists to localStorage
+  - Browser auto-detect via `i18next-browser-languagedetector`
+  - RTL layout applied to Arabic via `dir="rtl"` on `<html>`
+- **Accessibility WCAG 2.1** (Module 24)
+  - Skip-to-content link (keyboard users reach main content instantly)
+  - `role="main"` + `aria-label` on main content area
+  - Font size control: S / M / L / XL (14–20px), persisted across sessions
+  - High contrast mode toggle (CSS class `high-contrast` on `<html>`)
+  - Reduce motion toggle (disables all CSS animations/transitions)
+  - `:focus-visible` ring on all interactive elements
+- **Complete Dark Mode** (Module 25) — all pages use `dark:` Tailwind classes; charts, modals, badges all theme-aware
+- **Super Admin Dashboard** (Module 26) — `/admin` route, SUPER_ADMIN role
+  - All Stores tab: activate/suspend any store
+  - All Users tab: paginated user list with GDPR erase (soft-delete/anonymize)
+  - Platform Revenue tab: total revenue, monthly orders, top stores
+  - AI Usage tab: conversation and insight counts, recent activity
+  - Platform Settings tab: feature flags, version info
+- **Security Hardening** (Module 27)
+  - Helmet.js security headers on every response
+  - Rate limiting: global 100 req/min on `/api`; routes include auth-specific guards
+  - Winston structured logging + Morgan HTTP access logs
+  - `GET /api/health` — uptime, timestamp, environment
+  - GDPR endpoints: `GET /api/admin/gdpr/export/:userId`, `DELETE /api/admin/gdpr/delete/:userId`
 
 ### Phase 3 — AI Agent & Analytics ✅
 - **AI chat agent** — floating button on every page, role-aware responses for all 5 roles
@@ -183,4 +214,20 @@ To switch to real Claude (`claude-sonnet-4-6`), set a funded `ANTHROPIC_API_KEY`
 
 All endpoints are prefixed with `/api`. The backend runs on port 5000; the Vite dev proxy forwards `/api` requests there.
 
-Key route groups: `/auth`, `/dashboard`, `/products`, `/categories`, `/inventory`, `/suppliers`, `/staff`, `/managers`, `/store`, `/audit-logs`, `/profile`, `/orders`, `/sales`, `/finance`, `/crm`, `/promotions`, `/pos`, `/notifications`, `/ai`, `/search`, `/reports`, `/analytics`, `/delivery`, `/driver`, `/routes`, `/customer`
+Key route groups: `/auth`, `/dashboard`, `/products`, `/categories`, `/inventory`, `/suppliers`, `/staff`, `/managers`, `/store`, `/audit-logs`, `/profile`, `/orders`, `/sales`, `/finance`, `/crm`, `/promotions`, `/pos`, `/notifications`, `/ai`, `/search`, `/reports`, `/analytics`, `/delivery`, `/driver`, `/routes`, `/customer`, `/campaigns`, `/ab-tests`, `/referrals`, `/admin`
+
+**Phase 5 endpoints:**
+- `GET/POST /api/campaigns` — list and create campaigns
+- `PUT/DELETE /api/campaigns/:id` — update/delete campaign
+- `POST /api/campaigns/:id/launch` — activate a campaign
+- `GET /api/campaigns/:id/analytics` — campaign performance data
+- `GET/POST /api/ab-tests` — A/B test management
+- `GET /api/referrals/stats` — referral program stats
+- `GET /api/admin/stores` — all stores (SUPER_ADMIN)
+- `PATCH /api/admin/stores/:id/status` — activate/suspend store
+- `GET /api/admin/users` — all users with pagination
+- `GET /api/admin/revenue` — platform revenue overview
+- `GET /api/admin/ai-usage` — AI conversation stats
+- `GET /api/admin/settings` — platform settings & feature flags
+- `GET /api/admin/gdpr/export/:userId` — GDPR data export
+- `DELETE /api/admin/gdpr/delete/:userId` — GDPR soft delete (anonymize)

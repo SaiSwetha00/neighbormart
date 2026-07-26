@@ -15,6 +15,7 @@ enum UserRole {
   STAFF
   CUSTOMER
   DRIVER
+  SUPER_ADMIN
 }
 
 enum UserStatus {
@@ -241,6 +242,8 @@ model Store {
   deliveries          Delivery[]
   routes              Route[]
   driverEarnings      DriverEarning[]
+  campaigns           Campaign[]
+  abTests             ABTest[]
 
   @@map("stores")
 }
@@ -1430,4 +1433,74 @@ model DriverRating {
   driver Driver @relation(fields: [driverId], references: [id])
 
   @@map("driver_ratings")
+}
+
+// ─── Phase 5 Enums ───────────────────────────────────────────────────────────
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+// ─── Phase 5 Models ──────────────────────────────────────────────────────────
+
+model Campaign {
+  id           String         @id @default(cuid())
+  storeId      String
+  name         String
+  type         String
+  status       CampaignStatus @default(DRAFT)
+  targetTier   String?
+  subject      String?
+  content      String         @db.Text
+  discountPct  Float?
+  budgetLimit  Float?
+  startAt      DateTime?
+  endAt        DateTime?
+  sentCount    Int            @default(0)
+  openCount    Int            @default(0)
+  clickCount   Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  store     Store               @relation(fields: [storeId], references: [id])
+  analytics CampaignAnalytics[]
+
+  @@map("campaigns")
+}
+
+model CampaignAnalytics {
+  id         String   @id @default(cuid())
+  campaignId String
+  date       DateTime @db.Date
+  sent       Int      @default(0)
+  opened     Int      @default(0)
+  clicked    Int      @default(0)
+  converted  Int      @default(0)
+  revenue    Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  campaign Campaign @relation(fields: [campaignId], references: [id])
+
+  @@map("campaign_analytics")
+}
+
+model ABTest {
+  id            String   @id @default(cuid())
+  storeId       String
+  name          String
+  variantA      String   @db.Text
+  variantB      String   @db.Text
+  trafficSplit  Int      @default(50)
+  winnerVariant String?
+  startAt       DateTime?
+  endAt         DateTime?
+  status        String   @default("DRAFT")
+  createdAt     DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("ab_tests")
 }

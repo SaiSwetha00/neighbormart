@@ -36,6 +36,8 @@ const CustomersPage = lazy(() => import('@/pages/owner/CustomersPage'));
 const ReportsPage = lazy(() => import('@/pages/owner/ReportsPage'));
 const AIDashboardPage = lazy(() => import('@/pages/owner/AIDashboardPage'));
 const DeliveryPage = lazy(() => import('@/pages/owner/DeliveryPage'));
+const MarketingPage = lazy(() => import('@/pages/owner/MarketingPage'));
+const AdminPage = lazy(() => import('@/pages/admin/AdminPage'));
 
 // Manager pages (lazy loaded)
 const ManagerDashboard = lazy(() => import('@/pages/manager/DashboardPage'));
@@ -77,6 +79,8 @@ function RootRedirect() {
       return <Navigate to="/manager/dashboard" replace />;
     case 'STAFF':
       return <Navigate to="/staff/dashboard" replace />;
+    case 'SUPER_ADMIN':
+      return <Navigate to="/admin" replace />;
     default:
       return <Navigate to="/login" replace />;
   }
@@ -128,6 +132,7 @@ export default function App() {
             <Route path="reports" element={<ReportsPage />} />
             <Route path="ai" element={<AIDashboardPage />} />
             <Route path="delivery" element={<DeliveryPage />} />
+            <Route path="marketing" element={<MarketingPage />} />
           </Route>
 
           {/* ── Manager routes ────────────────────────────────────── */}
@@ -156,6 +161,9 @@ export default function App() {
             <Route path="dashboard" element={<StaffDashboard />} />
             <Route path="pos" element={<POSPage />} />
           </Route>
+
+          {/* ── Super Admin routes ────────────────────────────────── */}
+          <Route path="/admin" element={<AdminPage />} />
 
           {/* Catch-all → root redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />

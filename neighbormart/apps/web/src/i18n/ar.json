@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "categories": "الفئات والعلامات التجارية",
+    "inventory": "المخزون",
+    "suppliers": "الموردون",
+    "sales": "المبيعات",
+    "finance": "المالية",
+    "promotions": "العروض",
+    "customers": "العملاء",
+    "team": "الفريق",
+    "schedule": "الجدول الزمني",
+    "auditLog": "سجل التدقيق",
+    "reports": "التقارير",
+    "ai": "مركز الذكاء الاصطناعي",
+    "delivery": "التوصيل",
+    "marketing": "التسويق",
+    "settings": "الإعدادات"
+  },
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "create": "إنشاء",
+    "search": "بحث",
+    "filter": "تصفية",
+    "loading": "جار التحميل…",
+    "noData": "لا توجد بيانات",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "name": "الاسم",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "date": "التاريخ",
+    "total": "الإجمالي",
+    "quantity": "الكمية"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "signingIn": "جار تسجيل الدخول…"
+  },
+  "dashboard": {
+    "totalRevenue": "إجمالي الإيرادات",
+    "totalOrders": "إجمالي الطلبات",
+    "totalCustomers": "إجمالي العملاء",
+    "lowStockAlerts": "تنبيهات المخزون المنخفض"
+  },
+  "marketing": {
+    "title": "التسويق والحملات",
+    "campaigns": "الحملات",
+    "abTesting": "اختبار أ/ب",
+    "referral": "الإحالات",
+    "flashSales": "تخفيضات فلاش",
+    "newCampaign": "حملة جديدة",
+    "launch": "إطلاق",
+    "pause": "إيقاف مؤقت",
+    "sent": "مُرسَل",
+    "opened": "مفتوح",
+    "clicked": "نقرات",
+    "openRate": "معدل الفتح"
+  },
+  "accessibility": {
+    "fontSize": "حجم الخط",
+    "small": "صغير",
+    "medium": "متوسط",
+    "large": "كبير",
+    "extraLarge": "كبير جداً",
+    "highContrast": "تباين عالٍ",
+    "reduceMotion": "تقليل الحركة",
+    "skipToContent": "انتقل إلى المحتوى الرئيسي"
+  }
+}
