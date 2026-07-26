@@ -27,12 +27,15 @@ const CATEGORIES = [
 
 async function main() {
   for (const name of CATEGORIES) {
-    await prisma.category.upsert({
-      where: { storeId_name: { storeId: STORE_ID, name } },
-      update: {},
-      create: { storeId: STORE_ID, name },
+    const existing = await prisma.category.findFirst({
+      where: { storeId: STORE_ID, name },
     });
-    console.log(`Seeded: ${name}`);
+    if (!existing) {
+      await prisma.category.create({ data: { storeId: STORE_ID, name } });
+      console.log(`Created: ${name}`);
+    } else {
+      console.log(`Exists:  ${name}`);
+    }
   }
   console.log('All categories seeded!');
 }
