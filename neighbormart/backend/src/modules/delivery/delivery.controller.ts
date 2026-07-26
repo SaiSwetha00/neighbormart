@@ -40,7 +40,10 @@ export async function createZone(req: Request, res: Response) {
   try {
     const { storeId } = req.user!;
     sendSuccess(res, await svc.createZone(storeId, req.body), 'Created', 201);
-  } catch (e: any) { sendError(res, e.message); }
+  } catch (e: any) {
+    if (e.code && e.code.startsWith('P')) return sendError(res, 'Invalid delivery zone data', 422);
+    sendError(res, e.message);
+  }
 }
 
 export async function updateZone(req: Request, res: Response) {

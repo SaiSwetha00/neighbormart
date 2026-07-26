@@ -19,5 +19,8 @@ router.put('/finance/tax-configs/:id', authenticate, requireOwner, financeContro
 // P&L and forecast
 router.get('/finance/pl', authenticate, requireOwner, financeController.getPL);
 router.get('/finance/forecast', authenticate, requireOwner, financeController.getForecast);
+// Additional finance routes
+router.get('/finance/cashflow', authenticate, requireOwner, financeController.getCashflow);
+router.post('/expenses', authenticate, requireManager, financeController.createExpense);
 
 export default router;

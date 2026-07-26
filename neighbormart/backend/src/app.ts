@@ -7,6 +7,7 @@ import rateLimit from 'express-rate-limit';
 import morgan from 'morgan';
 import { config } from './config';
 import { errorHandler, notFound } from './middleware/error.middleware';
+import { globalAuditLog } from './middleware/audit.middleware';
 import { logger } from './utils/logger';
 import prisma from './config/database';
 import { redis } from './config/redis';
@@ -79,6 +80,9 @@ app.use(
     },
   })
 );
+
+// ─── Global audit log for mutation routes ────────────────────────────────────
+app.use('/api', globalAuditLog);
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

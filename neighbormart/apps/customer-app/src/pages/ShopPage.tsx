@@ -6,7 +6,7 @@ import Header from '../components/Header'
 import ProductCard, { Product } from '../components/ProductCard'
 import api, { mapProduct } from '../api'
 
-const STORE_ID = 'demo-store-001'
+const STORE_ID = 'store-prod-001'
 
 interface ProductsResponse {
   products: Product[]

@@ -147,6 +147,38 @@ export const salesController = {
     }
   },
 
+  async summary(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async byHour(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async byCategory(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async exportSales(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
   async staffPerformance(req: AuthRequest, res: Response) {
     try {
       const { dateFrom, dateTo } = req.query;

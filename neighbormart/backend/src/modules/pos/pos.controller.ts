@@ -237,6 +237,36 @@ export const posController = {
     }
   },
 
+  async searchProducts(req: AuthRequest, res: Response) {
+    try {
+      const { q, storeId } = req.body;
+      const sid = storeId || req.user!.storeId;
+      const products = await prisma.product.findMany({
+        where: {
+          storeId: sid,
+          OR: [
+            { name: { contains: String(q ?? '') } },
+            { sku: { contains: String(q ?? '') } },
+            { barcode: { contains: String(q ?? '') } },
+          ],
+          status: 'ACTIVE',
+        },
+        take: 20,
+      });
+      return sendSuccess(res, { products });
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async createOrder(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
   async processReturn(req: AuthRequest, res: Response) {
     try {
       const { orderId, items, reason } = req.body;

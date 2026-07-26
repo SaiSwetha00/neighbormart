@@ -10,6 +10,8 @@ import {
   loyaltyController,
   crmController,
   customerProductController,
+  customerSelfController,
+  adminCustomerController,
 } from './customers.controller';
 
 const router = Router();
@@ -43,6 +45,12 @@ router.patch('/customer/shopping-lists/:id/items/:itemId/toggle', customerAuthen
 
 // ─── Loyalty ─────────────────────────────────────────────────────────────────
 router.get('/customer/loyalty', customerAuthenticate, loyaltyController.get);
+router.get('/customer/loyalty/balance', customerAuthenticate, customerSelfController.getLoyaltyBalance);
+
+// ─── Customer Self-Service ────────────────────────────────────────────────────
+router.get('/customer/search', customerSelfController.search);
+router.post('/customer/cart/items', customerAuthenticate, customerSelfController.addCartItem);
+router.get('/customer/orders/:id/tracking', customerAuthenticate, customerSelfController.getOrderTracking);
 
 // ─── Customer-Facing: Browse ─────────────────────────────────────────────────
 router.get('/customer/products', customerProductController.listProducts);
@@ -51,6 +59,11 @@ router.get('/customer/categories', customerProductController.listCategories);
 router.post('/customer/reviews', customerAuthenticate, customerProductController.submitReview);
 router.post('/customer/complaints', customerAuthenticate, customerProductController.submitComplaint);
 router.post('/customer/driver-ratings', customerAuthenticate, customerProductController.rateDriver);
+
+// ─── Admin Customer Routes ────────────────────────────────────────────────────
+router.get('/customers', authenticate, requireManager, adminCustomerController.listAll);
+router.get('/customers/segments', authenticate, requireManager, adminCustomerController.getSegments);
+router.get('/loyalty/tiers', authenticate, adminCustomerController.getLoyaltyTiers);
 
 // ─── Owner CRM ───────────────────────────────────────────────────────────────
 router.get('/crm/customers', authenticate, requireOwner, crmController.listCustomers);

@@ -15,6 +15,7 @@ router.delete('/promotions/:id', authenticate, requireOwner, promotionsControlle
 // Coupons
 router.get('/coupons', authenticate, requireOwner, promotionsController.listCoupons);
 router.post('/coupons', authenticate, requireOwner, promotionsController.createCoupon);
+router.post('/coupons/validate', authenticate, promotionsController.validateCoupon);
 router.post('/coupons/bulk-generate', authenticate, requireOwner, promotionsController.bulkGenerateCoupons);
 router.put('/coupons/:id', authenticate, requireOwner, promotionsController.updateCoupon);
 router.delete('/coupons/:id', authenticate, requireOwner, promotionsController.deleteCoupon);

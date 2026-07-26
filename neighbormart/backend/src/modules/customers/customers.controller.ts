@@ -563,3 +563,96 @@ export const customerProductController = {
     }
   },
 };
+
+// ─── Customer-Facing: Search, Cart, Tracking, Loyalty ────────────────────────
+
+export const customerSelfController = {
+  async search(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async addCartItem(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async getOrderTracking(req: AuthRequest, res: Response) {
+    try {
+      const tracking = await prisma.orderTracking.findMany({
+        where: { orderId: req.params.id },
+        orderBy: { timestamp: 'desc' },
+      });
+      return sendSuccess(res, { tracking });
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async getLoyaltyBalance(req: AuthRequest, res: Response) {
+    try {
+      const customer = await prisma.customer.findUnique({
+        where: { userId: req.user!.userId },
+        select: { loyaltyPoints: true, tier: true },
+      });
+      if (!customer) return sendError(res, 'Customer not found', 404);
+      return sendSuccess(res, { loyaltyPoints: customer.loyaltyPoints, tier: customer.tier });
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+};
+
+// ─── Admin: Customer list and loyalty tiers ───────────────────────────────────
+
+export const adminCustomerController = {
+  async listAll(req: AuthRequest, res: Response) {
+    try {
+      const { page = 1, limit = 20, search } = req.query;
+      const p = Number(page), l = Number(limit);
+      const where: any = { storeId: req.user!.storeId };
+      if (search) where.user = { name: { contains: String(search) } };
+      const [total, customers] = await Promise.all([
+        prisma.customer.count({ where }),
+        prisma.customer.findMany({
+          where,
+          include: { user: { select: { name: true, email: true, phone: true } } },
+          skip: (p - 1) * l,
+          take: l,
+          orderBy: { createdAt: 'desc' },
+        }),
+      ]);
+      return sendSuccess(res, { customers }, 'Customers retrieved', 200, getPagination(p, l, total));
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async getSegments(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async getLoyaltyTiers(_req: AuthRequest, res: Response) {
+    try {
+      const tiers = [
+        { tier: 'BRONZE', minPoints: 0, maxPoints: 499, discount: 0 },
+        { tier: 'SILVER', minPoints: 500, maxPoints: 1499, discount: 5 },
+        { tier: 'GOLD', minPoints: 1500, maxPoints: 4999, discount: 10 },
+        { tier: 'PLATINUM', minPoints: 5000, maxPoints: null, discount: 15 },
+      ];
+      return sendSuccess(res, { tiers });
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+};

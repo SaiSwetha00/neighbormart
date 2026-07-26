@@ -9,5 +9,10 @@ router.get('/sales/overview', authenticate, requireManager, salesController.over
 router.get('/sales/transactions', authenticate, requireManager, salesController.transactions);
 router.get('/sales/by-product', authenticate, requireManager, salesController.byProduct);
 router.get('/sales/staff-performance', authenticate, requireManager, salesController.staffPerformance);
+// Additional sales routes
+router.get('/sales/summary', authenticate, requireManager, salesController.summary);
+router.get('/sales/by-hour', authenticate, requireManager, salesController.byHour);
+router.get('/sales/by-category', authenticate, requireManager, salesController.byCategory);
+router.get('/sales/export', authenticate, requireManager, salesController.exportSales);
 
 export default router;

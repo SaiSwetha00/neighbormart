@@ -6,7 +6,9 @@ import { notificationsController } from './notifications.controller';
 const router = Router();
 
 router.get('/notifications', authenticate, notificationsController.list);
+router.get('/notifications/my', authenticate, notificationsController.list);
 router.patch('/notifications/mark-all-read', authenticate, notificationsController.markAllRead);
+router.patch('/notifications/read-all', authenticate, notificationsController.markAllRead);
 router.patch('/notifications/:id/read', authenticate, notificationsController.markRead);
 router.post('/notifications', authenticate, requireOwner, notificationsController.create);
 router.delete('/notifications/clear-old', authenticate, requireOwner, notificationsController.deleteOld);

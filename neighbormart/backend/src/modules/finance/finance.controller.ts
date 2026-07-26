@@ -180,6 +180,16 @@ export const financeController = {
     }
   },
 
+  // ─── Cash Flow ─────────────────────────────────────────────────────────────
+
+  async getCashflow(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
   // ─── Revenue Forecast (simple linear regression on last 30 days) ──────────
 
   async getForecast(req: AuthRequest, res: Response) {

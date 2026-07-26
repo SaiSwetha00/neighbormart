@@ -150,6 +150,34 @@ async function main() {
   });
   console.log(`Super Admin: ${adminUser.email}`);
 
+  // ─── Default Grocery Categories ──────────────────────────────────────────
+  const categories = [
+    'Fruits & Vegetables',
+    'Dairy & Eggs',
+    'Meat & Poultry',
+    'Seafood',
+    'Bakery & Bread',
+    'Beverages',
+    'Snacks & Chips',
+    'Frozen Foods',
+    'Canned & Packaged',
+    'Condiments & Sauces',
+    'Breakfast & Cereals',
+    'Pasta & Rice',
+    'Cleaning & Household',
+    'Personal Care & Beauty',
+    'Baby & Kids',
+    'Pet Supplies',
+    'Health & Wellness',
+    'International Foods',
+  ];
+
+  await prisma.category.createMany({
+    skipDuplicates: true,
+    data: categories.map((name) => ({ storeId: store.id, name })),
+  });
+  console.log(`Categories: ${categories.length} grocery categories seeded`);
+
   console.log('\nProduction seed complete.');
   console.log('Demo password for all accounts: Demo@2026');
 }

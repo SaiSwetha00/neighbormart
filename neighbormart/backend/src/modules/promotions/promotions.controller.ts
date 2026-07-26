@@ -46,6 +46,7 @@ export const promotionsController = {
       });
       return sendSuccess(res, promo, 'Promotion created', 201);
     } catch (err: any) {
+      if (err.code && err.code.startsWith('P')) return sendError(res, 'Invalid promotion data', 422);
       return sendError(res, err.message, 500);
     }
   },
@@ -153,6 +154,22 @@ export const promotionsController = {
     try {
       await prisma.coupon.delete({ where: { id: req.params.id } });
       return sendSuccess(res, null, 'Coupon deleted');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+
+  async validateCoupon(req: AuthRequest, res: Response) {
+    try {
+      const { code, subtotal } = req.body;
+      const storeId = req.user!.storeId;
+      const coupon = await prisma.coupon.findFirst({
+        where: { storeId, code, status: 'ACTIVE', OR: [{ expiryDate: null }, { expiryDate: { gte: new Date() } }] },
+      });
+      if (!coupon) return sendError(res, 'Invalid or expired coupon', 404);
+      if (coupon.minOrder > Number(subtotal ?? 0)) return sendError(res, `Minimum order $${coupon.minOrder} required`, 400);
+      const discount = coupon.type === 'PERCENTAGE' ? Number(subtotal) * coupon.value / 100 : coupon.value;
+      return sendSuccess(res, { coupon, discount });
     } catch (err: any) {
       return sendError(res, err.message, 500);
     }

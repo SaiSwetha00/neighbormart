@@ -304,3 +304,13 @@ export const orderController = {
     }
   },
 };
+
+export const receiptController = {
+  async getPdf(req: AuthRequest, res: Response) {
+    try {
+      return sendSuccess(res, [], 'Not yet implemented');
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
+};

@@ -16,5 +16,9 @@ router.post('/pos/sale', authenticate, requireStaff, posController.processSale);
 router.get('/pos/customer-search', authenticate, requireStaff, posController.searchCustomer);
 router.post('/pos/validate-coupon', authenticate, requireStaff, posController.validateCoupon);
 router.post('/pos/return', authenticate, requireStaff, posController.processReturn);
+// Additional POS routes
+router.post('/pos/products/search', authenticate, requireStaff, posController.searchProducts);
+router.post('/pos/orders', authenticate, requireStaff, posController.createOrder);
+router.post('/pos/returns', authenticate, requireStaff, posController.processReturn);
 
 export default router;

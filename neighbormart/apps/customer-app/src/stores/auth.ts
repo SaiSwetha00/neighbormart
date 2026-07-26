@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (registerData: RegisterData) => {
     const res = await api.post('/customer/auth/register', {
       ...registerData,
-      storeId: 'demo-store-001',
+      storeId: 'store-prod-001',
     })
     const data = res.data?.data ?? res.data
     setUser(parseCustomer(data))
