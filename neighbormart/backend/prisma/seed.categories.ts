@@ -1,10 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
-const STORE_ID = 'demo-store-001';
-
-const CATEGORIES = [
+const categories = [
   'Dairy & Eggs',
   'Bakery & Bread',
   'Meat, Poultry & Seafood',
@@ -22,27 +20,38 @@ const CATEGORIES = [
   'Frozen Foods',
   'Ready-to-Eat & Deli',
   'Organic & Specialty',
-  'Store & Packaging Supplies',
-];
+  'Store & Packaging Supplies'
+]
 
 async function main() {
-  for (const name of CATEGORIES) {
-    const existing = await prisma.category.findFirst({
-      where: { storeId: STORE_ID, name },
-    });
-    if (!existing) {
-      await prisma.category.create({ data: { storeId: STORE_ID, name } });
-      console.log(`Created: ${name}`);
-    } else {
-      console.log(`Exists:  ${name}`);
-    }
+  console.log('Seeding categories...')
+
+  const store = await prisma.store.findFirst({
+    where: { id: 'demo-store-001' }
+  })
+
+  if (!store) {
+    console.log('Store not found!')
+    return
   }
-  console.log('All categories seeded!');
+
+  for (const name of categories) {
+    await prisma.category.upsert({
+      where: {
+        id: name.toLowerCase()
+               .replace(/[^a-z0-9]/g, '-')
+      },
+      update: {},
+      create: {
+        name,
+        storeId: store.id
+      }
+    })
+    console.log('Created:', name)
+  }
+
+  console.log('All 18 categories seeded!')
+  await prisma.$disconnect()
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+main().catch(console.error)
