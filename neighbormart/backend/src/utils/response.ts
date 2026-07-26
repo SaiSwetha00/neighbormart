@@ -13,12 +13,12 @@ export const sendSuccess = (
   message = 'Success',
   statusCode = 200,
   pagination?: PaginationMeta
-) => {
-  return res.status(statusCode).json({
+): void => {
+  res.status(statusCode).json({
     success: true,
     message,
     data,
-    ...(pagination && { pagination }),
+    ...(pagination ? { pagination } : {}),
   });
 };
 
@@ -27,11 +27,11 @@ export const sendError = (
   message = 'An error occurred',
   statusCode = 500,
   errors?: unknown
-) => {
-  return res.status(statusCode).json({
+): void => {
+  res.status(statusCode).json({
     success: false,
     message,
-    ...(errors && { errors }),
+    ...(errors !== undefined && errors !== null ? { errors } : {}),
   });
 };
 

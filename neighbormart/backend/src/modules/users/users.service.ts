@@ -104,7 +104,7 @@ export async function updateManager(id: string, data: UpdateManagerInput) {
 export async function updateManagerStatus(id: string, status: string) {
   const manager = await prisma.manager.findUnique({ where: { id } });
   if (!manager) throw new Error('Manager not found');
-  await prisma.user.update({ where: { id: manager.userId }, data: { status } });
+  await prisma.user.update({ where: { id: manager.userId }, data: { status: status as any } });
   return getManager(id);
 }
 
@@ -255,7 +255,7 @@ export async function updateStaff(id: string, data: UpdateStaffInput) {
 export async function updateStaffStatus(id: string, status: string) {
   const staff = await prisma.staff.findUnique({ where: { id } });
   if (!staff) throw new Error('Staff member not found');
-  await prisma.user.update({ where: { id: staff.userId }, data: { status } });
+  await prisma.user.update({ where: { id: staff.userId }, data: { status: status as any } });
   return getStaffMember(id);
 }
 

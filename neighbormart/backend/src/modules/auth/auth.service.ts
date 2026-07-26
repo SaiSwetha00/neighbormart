@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import prisma from '../../config/database';
-import config from '../../config';
+import { config } from '../../config';
 import {
   generateAccessToken,
   generateRefreshToken,

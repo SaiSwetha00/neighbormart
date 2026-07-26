@@ -62,7 +62,7 @@ export async function optimizeRoute(storeId: string, driverId: string, deliveryI
       stopCount: optimized.length,
       totalDistKm: Math.round(totalDist * 10) / 10,
       estDurationMins: estMins,
-      waypointsJson: { origin, stops: optimized },
+      waypointsJson: { origin, stops: optimized } as any,
       optimizedAt: new Date(),
     },
   });

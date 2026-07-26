@@ -23,7 +23,7 @@ export async function getBrands(storeId: string) {
 }
 
 export async function createBrand(storeId: string, data: CreateBrandInput) {
-  return prisma.brand.create({ data: { ...data, storeId } });
+  return prisma.brand.create({ data: { ...data, storeId } as any });
 }
 
 export async function updateBrand(id: string, data: Partial<CreateBrandInput>) {
@@ -52,7 +52,7 @@ export async function getCategories(storeId: string) {
 }
 
 export async function createCategory(storeId: string, data: CreateCategoryInput) {
-  return prisma.category.create({ data: { ...data, storeId } });
+  return prisma.category.create({ data: { ...data, storeId } as any });
 }
 
 export async function updateCategory(id: string, data: Partial<CreateCategoryInput>) {
@@ -165,7 +165,7 @@ export async function getProduct(id: string) {
 export async function createProduct(storeId: string, data: CreateProductInput, userId: string) {
   const sku = data.sku || generateSKU();
   return prisma.product.create({
-    data: { ...data, sku, storeId, createdBy: userId },
+    data: { ...data, sku, storeId, createdBy: userId } as any,
   });
 }
 
@@ -188,7 +188,7 @@ export async function deleteProduct(id: string) {
 }
 
 export async function updateProductStatus(id: string, status: string) {
-  return prisma.product.update({ where: { id }, data: { status } });
+  return prisma.product.update({ where: { id }, data: { status: status as any } });
 }
 
 // ── Images ────────────────────────────────────────────────────────────────────
@@ -216,7 +216,7 @@ export async function getVariants(productId: string) {
 }
 
 export async function createVariant(productId: string, data: CreateVariantInput) {
-  return prisma.productVariant.create({ data: { ...data, productId } });
+  return prisma.productVariant.create({ data: { ...data, productId } as any });
 }
 
 export async function updateVariant(variantId: string, data: Partial<CreateVariantInput>) {
@@ -313,7 +313,7 @@ export async function bulkPriceUpdate(productIds: string[], newPrice: number, us
 export async function bulkStatusUpdate(productIds: string[], status: string) {
   const result = await prisma.product.updateMany({
     where: { id: { in: productIds } },
-    data: { status },
+    data: { status: status as any },
   });
   return { updated: result.count };
 }

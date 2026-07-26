@@ -214,7 +214,7 @@ export async function completeAudit(storeId: string, data: CompleteAuditInput, u
 
   return prisma.dailyAudit.update({
     where: { id: audit.id },
-    data: { status: 'COMPLETED', completedBy: userId, discrepancies: data.discrepancies ?? null },
+    data: { status: 'COMPLETED', completedBy: userId, discrepancies: (data as any).discrepancies ?? null },
   });
 }
 

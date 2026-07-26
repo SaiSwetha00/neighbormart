@@ -73,7 +73,7 @@ export async function createAuditLog(data: {
   newValue?: unknown;
   ipAddress?: string;
 }) {
-  return prisma.auditLog.create({ data });
+  return prisma.auditLog.create({ data: data as any });
 }
 
 export async function getAuditModules(storeId: string) {

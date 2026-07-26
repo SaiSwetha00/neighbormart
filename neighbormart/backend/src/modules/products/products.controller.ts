@@ -314,7 +314,7 @@ export async function scanBarcode(req: AuthRequest, res: Response) {
       req.user!.storeId
     );
     if (!product) {
-      return sendError(res, new Error("Product not found"), 404);
+      return sendError(res, "Product not found", 404);
     }
     return sendSuccess(res, product, "Product found");
   } catch (error) {

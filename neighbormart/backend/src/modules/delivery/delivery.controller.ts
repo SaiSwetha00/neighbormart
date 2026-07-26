@@ -39,7 +39,7 @@ export async function getZones(req: Request, res: Response) {
 export async function createZone(req: Request, res: Response) {
   try {
     const { storeId } = req.user!;
-    sendSuccess(res, await svc.createZone(storeId, req.body), 201);
+    sendSuccess(res, await svc.createZone(storeId, req.body), 'Created', 201);
   } catch (e: any) { sendError(res, e.message); }
 }
 
@@ -67,7 +67,7 @@ export async function getSlots(req: Request, res: Response) {
 export async function createSlot(req: Request, res: Response) {
   try {
     const { storeId } = req.user!;
-    sendSuccess(res, await svc.createSlot(storeId, req.body), 201);
+    sendSuccess(res, await svc.createSlot(storeId, req.body), 'Created', 201);
   } catch (e: any) { sendError(res, e.message); }
 }
 
