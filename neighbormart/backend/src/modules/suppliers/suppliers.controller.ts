@@ -110,7 +110,9 @@ export async function updatePurchaseOrder(req: AuthRequest, res: Response): Prom
 export async function updatePOStatus(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { status } = req.body as { status: string };
+    const validStatuses = ['DRAFT', 'SENT', 'RECEIVED', 'PARTIAL', 'CANCELLED'];
     if (!status) return sendError(res, 'Status is required', 400);
+    if (!validStatuses.includes(status)) return sendError(res, `Status must be one of: ${validStatuses.join(', ')}`, 400);
     const po = await suppliersService.updatePOStatus(req.params.id, status);
     return sendSuccess(res, po, 'Purchase order status updated successfully');
   } catch (error: unknown) {

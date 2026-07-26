@@ -110,7 +110,7 @@ function ProfileInfoCard() {
     queryKey: ['my-profile'],
     queryFn: async () => {
       const res = await api.get('/profile');
-      return res.data;
+      return res.data?.data ?? res.data;
     },
   });
 

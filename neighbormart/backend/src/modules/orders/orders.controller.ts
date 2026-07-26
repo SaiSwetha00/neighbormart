@@ -230,6 +230,9 @@ export const orderController = {
   async updateStatus(req: AuthRequest, res: Response) {
     try {
       const { status, note } = req.body;
+      const validStatuses = ['PENDING', 'CONFIRMED', 'PACKED', 'OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'];
+      if (!status) return sendError(res, 'Status is required', 400);
+      if (!validStatuses.includes(status)) return sendError(res, `Status must be one of: ${validStatuses.join(', ')}`, 400);
       const order = await prisma.order.update({
         where: { id: req.params.id },
         data: { status, tracking: { create: { status, note, updatedBy: req.user!.userId } } },

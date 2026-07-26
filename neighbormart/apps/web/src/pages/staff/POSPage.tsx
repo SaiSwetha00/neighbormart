@@ -171,8 +171,7 @@ export default function POSPage() {
     queryKey: ['pos-session-active'],
     queryFn: async () => {
       const res = await api.get('/pos/session/active');
-      const raw = res.data?.data ?? res.data;
-      return raw ?? null;
+      return res.data?.success ? (res.data.data ?? null) : null;
     },
     refetchOnWindowFocus: false,
     staleTime: 30_000,
