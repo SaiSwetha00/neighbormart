@@ -19,6 +19,10 @@ export const config = {
     bucketName: process.env.AWS_BUCKET_NAME || 'neighbormart-assets',
   },
   frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
+  frontendUrls: (process.env.FRONTEND_URL || 'http://localhost:5173,http://localhost:3000,http://localhost:3001')
+    .split(',')
+    .map((u) => u.trim())
+    .filter(Boolean),
   anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
   rateLimit: {
     windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),

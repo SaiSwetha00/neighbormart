@@ -8,6 +8,8 @@ import morgan from 'morgan';
 import { config } from './config';
 import { errorHandler, notFound } from './middleware/error.middleware';
 import { logger } from './utils/logger';
+import prisma from './config/database';
+import { redis } from './config/redis';
 
 import authRoutes from './modules/auth/auth.routes';
 import userRoutes from './modules/users/users.routes';
@@ -35,11 +37,20 @@ import adminRoutes from './modules/admin/admin.routes';
 
 const app = express();
 
+// ─── Trust Railway/Vercel proxy ───────────────────────────────────────────────
+app.set('trust proxy', 1);
+
 // ─── Security middleware ────────────────────────────────────────────────────
 app.use(helmet());
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin || config.frontendUrls.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: ${origin} not allowed`));
+      }
+    },
     credentials: true,
   })
 );
@@ -95,12 +106,32 @@ app.use('/api', marketingRoutes);
 app.use('/api', adminRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
-app.get('/api/health', (_req, res) => {
-  res.json({
-    status: 'ok',
+app.get('/api/health', async (_req, res) => {
+  let database = 'ok';
+  let redisStatus = 'ok';
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+  } catch {
+    database = 'error';
+  }
+
+  try {
+    if (redis) await redis.ping();
+    else redisStatus = 'disabled';
+  } catch {
+    redisStatus = 'error';
+  }
+
+  const allOk = database === 'ok';
+  res.status(allOk ? 200 : 503).json({
+    status: allOk ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    uptime: Math.floor(process.uptime()),
     environment: config.nodeEnv,
+    version: '1.0.0',
+    database,
+    redis: redisStatus,
   });
 });
 

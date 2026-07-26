@@ -143,13 +143,26 @@ Open [http://localhost:5173](http://localhost:5173) for the main app.
 
 ### Demo Credentials
 
-| Role | Email | Password | App |
-|------|-------|----------|-----|
-| **Owner** | owner@neighbormart.com | password123 | localhost:5173 |
-| **Manager** | manager@neighbormart.com | password123 | localhost:5173 |
-| **Staff** | staff@neighbormart.com | password123 | localhost:5173 |
-| **Customer** | Register via customer app | — | localhost:3000 |
-| **Driver** | driver@neighbormart.com | password123 | localhost:3001 |
+**Local development** (password: `password123`):
+
+| Role | Email | App |
+|------|-------|-----|
+| **Owner** | owner@neighbormart.com | localhost:5173 |
+| **Manager** | manager@neighbormart.com | localhost:5173 |
+| **Staff** | staff.cashier@neighbormart.com | localhost:5173 |
+| **Driver** | driver@neighbormart.com | localhost:3001 |
+| **Customer** | Register via customer app | localhost:3000 |
+
+**Production demo** (password: `Demo@2026`):
+
+| Role | Email |
+|------|-------|
+| **Owner** | owner@neighbormart.com |
+| **Manager** | manager@neighbormart.com |
+| **Staff** | staff.cashier@neighbormart.com |
+| **Driver** | driver@neighbormart.com |
+| **Customer** | customer@neighbormart.com |
+| **Super Admin** | admin@neighbormart.com |
 
 ---
 
@@ -237,3 +250,97 @@ neighbormart/
     │   └── jobs/          # proactive.ts — hourly cron + 6AM daily brief
     └── prisma/            # schema + migrations + seed
 ```
+
+---
+
+## Deployment
+
+**Architecture:** Backend → Railway | Frontends → Vercel (3 projects)
+
+### Part 1 — Deploy Backend to Railway
+
+1. Go to [railway.app](https://railway.app) → **New Project → Deploy from GitHub repo**
+2. Select `SaiSwetha00/neighbormart`, set **Root Directory** to `neighbormart/backend`
+3. Railway auto-detects Node.js from `package.json`
+4. Add a **PostgreSQL** plugin: click **+ New → Database → PostgreSQL**
+5. Add a **Redis** plugin: click **+ New → Database → Redis**
+6. In **Variables**, add every key from `neighbormart/backend/.env.production`:
+   - `DATABASE_URL` — copy from the PostgreSQL plugin's "Connect" tab
+   - `REDIS_URL` — copy from the Redis plugin's "Connect" tab
+   - `JWT_ACCESS_SECRET` — run `node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"` and paste
+   - `JWT_REFRESH_SECRET` — run same command again, paste a different value
+   - `NODE_ENV=production`
+   - `FRONTEND_URL` — leave blank for now, fill in after Vercel deploys (Step 3)
+7. Click **Deploy** — Railway builds, runs `prisma migrate deploy`, and starts the server
+8. Open the **Settings → Networking** tab, copy the public domain (e.g. `https://neighbormart-backend.up.railway.app`)
+9. Run production seed: in Railway's terminal (or locally with the Railway DATABASE_URL):
+   ```bash
+   cd neighbormart/backend && npx ts-node prisma/seed.production.ts
+   ```
+
+### Part 2 — Replace Railway URL in vercel.json
+
+In the three `vercel.json` files, replace `[REPLACE_WITH_RAILWAY_URL]` with your actual Railway URL:
+
+```
+neighbormart/apps/web/vercel.json
+neighbormart/apps/customer-app/vercel.json
+neighbormart/apps/driver-app/vercel.json
+```
+
+Example: change `https://[REPLACE_WITH_RAILWAY_URL]/api/:path*` →
+`https://neighbormart-backend.up.railway.app/api/:path*`
+
+Commit and push this change.
+
+### Part 3 — Deploy Frontends to Vercel (3 separate projects)
+
+Repeat these steps **three times** — once for each app:
+
+| App | Root Directory |
+|-----|----------------|
+| Owner/Manager/Staff | `neighbormart/apps/web` |
+| Customer | `neighbormart/apps/customer-app` |
+| Driver | `neighbormart/apps/driver-app` |
+
+Steps per app:
+1. Go to [vercel.com](https://vercel.com) → **Add New Project → Import Git Repository**
+2. Select `SaiSwetha00/neighbormart`
+3. Set **Root Directory** to the path from the table above
+4. Framework preset: **Vite** (auto-detected)
+5. Click **Deploy** — Vercel runs `npm run build` and deploys
+6. Copy the deployment URL (e.g. `https://neighbormart-web.vercel.app`)
+
+### Part 4 — Wire up CORS and finish
+
+1. Go back to Railway → your backend service → **Variables**
+2. Set `FRONTEND_URL` to all three Vercel URLs, **comma-separated** (no spaces):
+   ```
+   https://neighbormart-web.vercel.app,https://neighbormart-customer.vercel.app,https://neighbormart-driver.vercel.app
+   ```
+3. Railway auto-redeploys with the new env var
+4. Test: open each Vercel URL and log in with the production demo credentials
+
+### Environment Variables Reference
+
+| Variable | Where set | Required |
+|----------|-----------|----------|
+| `DATABASE_URL` | Railway | Yes |
+| `REDIS_URL` | Railway | Yes |
+| `JWT_ACCESS_SECRET` | Railway | Yes |
+| `JWT_REFRESH_SECRET` | Railway | Yes |
+| `NODE_ENV` | Railway | Yes |
+| `FRONTEND_URL` | Railway | Yes |
+| `ANTHROPIC_API_KEY` | Railway | No (mock AI works without it) |
+| `AWS_ACCESS_KEY_ID` | Railway | No (for photo uploads) |
+
+---
+
+## Live Demo
+
+| App | URL |
+|-----|-----|
+| **Owner/Manager/Staff** | `[deploy to get URL]` |
+| **Customer App** | `[deploy to get URL]` |
+| **Driver App** | `[deploy to get URL]` |
+| **Backend API** | `[deploy to get URL]` |

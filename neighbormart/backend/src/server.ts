@@ -12,9 +12,13 @@ const httpServer = createServer(app);
 // ─── Socket.IO setup ─────────────────────────────────────────────────────────
 export const io = new Server(httpServer, {
   cors: {
-    origin: config.frontendUrl,
+    origin: config.frontendUrls,
     credentials: true,
   },
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  allowEIO3: true,
 });
 
 io.on('connection', (socket) => {
