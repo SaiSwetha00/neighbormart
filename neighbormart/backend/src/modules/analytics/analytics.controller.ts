@@ -4,6 +4,7 @@ import { sendSuccess, sendError } from '../../utils/response';
 import prisma from '../../config/database';
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from '../../config';
+import { mockReportSummary } from '../ai/ai.mock';
 
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
 
@@ -55,22 +56,25 @@ export async function getReportAISummary(req: AuthRequest, res: Response): Promi
   try {
     const { reportData, reportType } = req.body;
     if (!reportData) { sendError(res, 'Report data required', 400); return; }
-    const response = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 400,
-      messages: [{
-        role: 'user',
-        content: `Analyze this ${reportType} report data for a grocery store. Provide:
-1. Key finding (1 sentence)
-2. Three actionable recommendations (bullets)
-3. One thing to watch out for
 
-Data: ${JSON.stringify(reportData).substring(0, 2000)}
-
-Keep total response under 200 words.`,
-      }],
-    });
-    const summary = response.content[0].type === 'text' ? response.content[0].text : '';
+    let summary: string;
+    if (!config.anthropicApiKey || config.anthropicApiKey === 'your-anthropic-api-key-here') {
+      summary = mockReportSummary(reportData, reportType || 'GENERAL');
+    } else {
+      try {
+        const response = await client.messages.create({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 400,
+          messages: [{
+            role: 'user',
+            content: `Analyze this ${reportType} report data for a grocery store. Provide:\n1. Key finding (1 sentence)\n2. Three actionable recommendations (bullets)\n3. One thing to watch out for\n\nData: ${JSON.stringify(reportData).substring(0, 2000)}\n\nKeep total response under 200 words.`,
+          }],
+        });
+        summary = response.content[0].type === 'text' ? response.content[0].text : '';
+      } catch {
+        summary = mockReportSummary(reportData, reportType || 'GENERAL');
+      }
+    }
     sendSuccess(res, { summary });
   } catch (err: any) { sendError(res, err.message, 500); }
 }

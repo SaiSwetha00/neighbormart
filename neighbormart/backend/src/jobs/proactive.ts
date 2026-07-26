@@ -3,6 +3,7 @@ import prisma from '../config/database';
 import { createProactiveInsight } from '../modules/ai/ai.service';
 import Anthropic from '@anthropic-ai/sdk';
 import { config } from '../config';
+import { mockDailyBrief } from '../modules/ai/ai.mock';
 
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
 
@@ -52,29 +53,34 @@ async function generateDailyBrief() {
   try {
     const stores = await prisma.store.findMany({ select: { id: true, name: true } });
     for (const store of stores) {
-      const yesterday = new Date(Date.now() - 86400000);
-      const weekAgo = new Date(Date.now() - 7 * 86400000);
-      const [revenue, orders, lowStock] = await Promise.all([
-        prisma.order.aggregate({ where: { storeId: store.id, createdAt: { gte: yesterday }, status: { not: 'CANCELLED' } }, _sum: { total: true }, _count: true }),
-        prisma.order.aggregate({ where: { storeId: store.id, createdAt: { gte: weekAgo }, status: { not: 'CANCELLED' } }, _sum: { total: true } }),
-        prisma.product.count({ where: { storeId: store.id, stockQty: { lte: 10 }, status: 'ACTIVE' } }),
-      ]);
+      let brief: string;
 
-      if (!config.anthropicApiKey || config.anthropicApiKey === 'your-anthropic-api-key-here') return;
+      if (!config.anthropicApiKey || config.anthropicApiKey === 'your-anthropic-api-key-here') {
+        brief = await mockDailyBrief(store.id, store.name);
+      } else {
+        try {
+          const yesterday = new Date(Date.now() - 86400000);
+          const weekAgo = new Date(Date.now() - 7 * 86400000);
+          const [revenue, orders, lowStock] = await Promise.all([
+            prisma.order.aggregate({ where: { storeId: store.id, createdAt: { gte: yesterday }, status: { not: 'CANCELLED' } }, _sum: { total: true }, _count: true }),
+            prisma.order.aggregate({ where: { storeId: store.id, createdAt: { gte: weekAgo }, status: { not: 'CANCELLED' } }, _sum: { total: true } }),
+            prisma.product.count({ where: { storeId: store.id, stockQty: { lte: 10 }, status: 'ACTIVE' } }),
+          ]);
 
-      const response = await client.messages.create({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: `Generate a morning brief for the owner of ${store.name} grocery store (under 150 words):
-1. Yesterday's performance: ${revenue._count} orders, $${Number(revenue._sum.total || 0).toFixed(2)} revenue
-2. 7-day total: $${Number(orders._sum.total || 0).toFixed(2)}
-3. Low stock items: ${lowStock}
-Include 3 focus areas for today. Be specific and actionable.`,
-        }],
-      });
-      const brief = response.content[0].type === 'text' ? response.content[0].text : '';
+          const response = await client.messages.create({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 300,
+            messages: [{
+              role: 'user',
+              content: `Generate a morning brief for the owner of ${store.name} grocery store (under 150 words):\n1. Yesterday's performance: ${revenue._count} orders, $${Number(revenue._sum.total || 0).toFixed(2)} revenue\n2. 7-day total: $${Number(orders._sum.total || 0).toFixed(2)}\n3. Low stock items: ${lowStock}\nInclude 3 focus areas for today. Be specific and actionable.`,
+            }],
+          });
+          brief = response.content[0].type === 'text' ? response.content[0].text : '';
+        } catch {
+          brief = await mockDailyBrief(store.id, store.name);
+        }
+      }
+
       await createProactiveInsight(store.id, 'MEDIUM', 'Good morning! Daily brief ready', brief, 'dashboard').catch(() => {});
     }
   } catch (err) {

@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import prisma from '../../config/database';
 import { config } from '../../config';
+import { mockChat, mockPanelInsight } from './ai.mock';
 
 const client = new Anthropic({ apiKey: config.anthropicApiKey });
 
@@ -68,18 +69,30 @@ export async function chat(userId: string, role: string, storeId: string, messag
     prisma.aIConversation.findFirst({ where: { userId, storeId } }),
   ]);
 
-  const systemPrompt = buildSystemPrompt(role, ctx);
   const history = (existingConv?.messages as Array<{ role: string; content: string }>) || [];
   const trimmedHistory = history.slice(-10);
 
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 512,
-    system: systemPrompt,
-    messages: [...trimmedHistory, { role: 'user', content: message }] as Anthropic.MessageParam[],
-  });
+  let reply: string;
 
-  const reply = response.content[0].type === 'text' ? response.content[0].text : '';
+  if (!config.anthropicApiKey || config.anthropicApiKey === 'your-anthropic-api-key-here') {
+    // No key configured — use mock AI
+    reply = await mockChat(userId, role, storeId, message);
+  } else {
+    // Try real Claude API, fall back to mock if no credits / connection error
+    try {
+      const systemPrompt = buildSystemPrompt(role, ctx);
+      const response = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 512,
+        system: systemPrompt,
+        messages: [...trimmedHistory, { role: 'user', content: message }] as Anthropic.MessageParam[],
+      });
+      reply = response.content[0].type === 'text' ? response.content[0].text : '';
+    } catch {
+      // API key present but no credits or connection issue — use mock
+      reply = await mockChat(userId, role, storeId, message);
+    }
+  }
 
   const updatedMessages = [...trimmedHistory, { role: 'user', content: message }, { role: 'assistant', content: reply }];
 
@@ -130,17 +143,28 @@ export async function getAIDashboard(storeId: string) {
   return { insightsByPriority: insights, totalActions: actions, totalConversations: conversations };
 }
 
-export async function getPanelInsight(storeId: string, module: string, _userId: string): Promise<string> {
-  const ctx = await getStoreContext(storeId, 'OWNER');
-  const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 128,
-    messages: [{
-      role: 'user',
-      content: `You are an AI analyst for a grocery store. Give a 1-2 sentence insight about the "${module}" module. Store data: ${JSON.stringify(ctx)}. Be specific and actionable. No preamble.`,
-    }],
-  });
-  const text = response.content[0].type === 'text' ? response.content[0].text : '';
+export async function getPanelInsight(storeId: string, module: string, userId: string): Promise<string> {
+  let text: string;
+
+  if (!config.anthropicApiKey || config.anthropicApiKey === 'your-anthropic-api-key-here') {
+    text = await mockPanelInsight(storeId, module);
+  } else {
+    try {
+      const ctx = await getStoreContext(storeId, 'OWNER');
+      const response = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 128,
+        messages: [{
+          role: 'user',
+          content: `You are an AI analyst for a grocery store. Give a 1-2 sentence insight about the "${module}" module. Store data: ${JSON.stringify(ctx)}. Be specific and actionable. No preamble.`,
+        }],
+      });
+      text = response.content[0].type === 'text' ? response.content[0].text : '';
+    } catch {
+      text = await mockPanelInsight(storeId, module);
+    }
+  }
+
   await prisma.aIInsight.create({ data: { storeId, type: 'PANEL', title: `${module} insight`, content: text, priority: 'LOW', module } }).catch(() => {});
   return text;
 }
