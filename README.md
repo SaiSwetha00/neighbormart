@@ -9,7 +9,7 @@ A full-stack grocery store management platform for owners, managers, staff, cust
 | **Phase 1** | ✅ Complete | Core admin — products, inventory, suppliers, team, scheduling, audit |
 | **Phase 2** | ✅ Complete | POS, sales analytics, finance, CRM, promotions, customer app |
 | **Phase 3** | ✅ Complete | AI agent (mock), visual search, advanced analytics & reports |
-| **Phase 4** | 🔜 Planned | — |
+| **Phase 4** | ✅ Complete | Delivery system, driver app, route optimization, real-time tracking |
 
 ## Tech Stack
 
@@ -42,6 +42,23 @@ A full-stack grocery store management platform for owners, managers, staff, cust
 - **Promotions** — percentage/fixed discounts, coupons, usage tracking
 - **Customer app** — browse products, cart, checkout, order tracking, loyalty
 
+### Phase 4 — Delivery & Logistics ✅
+- **Delivery zones** — polygon zones with base fee + per-km pricing, max distance
+- **Time slots** — day-of-week slots per zone with max-order caps
+- **Delivery management** — owner dashboard with 5 tabs: live map, orders queue, zones & slots, drivers, performance
+- **Driver assignment** — manager assigns drivers to DELIVERY orders; Socket.io pushes `delivery-assigned` and `new-delivery` events instantly
+- **Driver app** — mobile-first React web app (port 3001) with bottom nav
+  - Online/offline toggle, delivery queue, accept/reject orders
+  - GPS location updates broadcast live to store dashboard and customer order tracker
+  - Mark picked-up → delivered (proof photo URL) or failed (with reason)
+  - Daily earnings breakdown (80% of delivery fee), ratings history
+- **Customer live tracking** — order tracking endpoint returns driver GPS coords in real time
+- **Route optimization** — nearest-neighbour TSP heuristic with Haversine distance; no external API needed
+- **Batch assign** — assign multiple deliveries to one driver and auto-optimize route
+- **Driver ratings** — customers rate drivers after delivery; driver average auto-updates
+- **Socket.io events** — `driver-online/offline`, `driver-location`, `delivery-assigned`, `new-delivery`, `order-status-update`, `delivery-update`; rooms scoped to `store:`, `driver:`, `order:`
+- **Seed credentials** — `driver@neighbormart.com / password123`
+
 ### Phase 3 — AI Agent & Analytics ✅
 - **AI chat agent** — floating button on every page, role-aware responses for all 5 roles
   - Owner: revenue trends, forecasts, staff status, proactive alerts
@@ -69,12 +86,18 @@ neighbormart/
 │   │       │   ├── ai/    # AIChatDrawer, AIInsightCard, AIAlertsPanel
 │   │       │   └── layout/
 │   │       └── stores/    # Zustand state
-│   └── customer-app/      # Customer React app (port 3000)
+│   ├── customer-app/      # Customer React app (port 3000)
+│   └── driver-app/        # Driver mobile-first React app (port 3001)
+│       └── src/
+│           ├── pages/     # Login, Home, Queue, ActiveDelivery, Earnings, Ratings
+│           ├── components/ # BottomNav
+│           └── services/  # auth.ts (cookie-based, DRIVER role)
 └── backend/               # Express API (port 5000)
     ├── src/
     │   ├── modules/       # auth, users, products, inventory, suppliers,
     │   │                  # staff, orders, sales, finance, crm, promotions,
-    │   │                  # notifications, pos, ai, search, analytics
+    │   │                  # notifications, pos, ai, search, analytics,
+    │   │                  # delivery, driver, routes
     │   └── jobs/          # proactive.ts — hourly cron + 6AM daily brief
     └── prisma/            # schema + migrations + seed
 ```
@@ -129,6 +152,9 @@ cd neighbormart/apps/web && npm run dev
 
 # Customer app (port 3000)
 cd neighbormart/apps/customer-app && npm run dev
+
+# Driver app (port 3001)
+cd neighbormart/apps/driver-app && npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173)
@@ -141,6 +167,7 @@ Open [http://localhost:5173](http://localhost:5173)
 | Manager | manager@neighbormart.com | password123 |
 | Staff | staff@neighbormart.com | password123 |
 | Customer | (register via customer app) | — |
+| Driver | driver@neighbormart.com | password123 |
 
 ## AI Features
 
@@ -156,4 +183,4 @@ To switch to real Claude (`claude-sonnet-4-6`), set a funded `ANTHROPIC_API_KEY`
 
 All endpoints are prefixed with `/api`. The backend runs on port 5000; the Vite dev proxy forwards `/api` requests there.
 
-Key route groups: `/auth`, `/dashboard`, `/products`, `/categories`, `/inventory`, `/suppliers`, `/staff`, `/managers`, `/store`, `/audit-logs`, `/profile`, `/orders`, `/sales`, `/finance`, `/crm`, `/promotions`, `/pos`, `/notifications`, `/ai`, `/search`, `/reports`, `/analytics`
+Key route groups: `/auth`, `/dashboard`, `/products`, `/categories`, `/inventory`, `/suppliers`, `/staff`, `/managers`, `/store`, `/audit-logs`, `/profile`, `/orders`, `/sales`, `/finance`, `/crm`, `/promotions`, `/pos`, `/notifications`, `/ai`, `/search`, `/reports`, `/analytics`, `/delivery`, `/driver`, `/routes`, `/customer`
