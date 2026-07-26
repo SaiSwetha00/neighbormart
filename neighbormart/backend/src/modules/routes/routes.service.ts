@@ -34,16 +34,14 @@ function nearestNeighbour(origin: LatLng, stops: LatLng[]): LatLng[] {
 export async function optimizeRoute(storeId: string, driverId: string, deliveryIds: string[]) {
   const deliveries = await prisma.delivery.findMany({
     where: { id: { in: deliveryIds }, storeId },
-    include: { order: { include: { customer: { select: { name: true } } } } },
+    include: { order: { include: { customer: { select: { user: { select: { name: true } } } } } } },
   });
-
-  const store = await prisma.store.findUnique({ where: { id: storeId } });
 
   const origin: LatLng = { lat: 12.9716, lng: 77.5946, label: 'Store' }; // default coords
 
   const stops: LatLng[] = deliveries
     .filter(d => d.addressLat && d.addressLng)
-    .map(d => ({ lat: d.addressLat!, lng: d.addressLng!, label: d.order.customer?.name || d.id, deliveryId: d.id }));
+    .map(d => ({ lat: d.addressLat!, lng: d.addressLng!, label: (d.order.customer as any)?.user?.name || d.id, deliveryId: d.id }));
 
   const optimized = nearestNeighbour(origin, stops);
 

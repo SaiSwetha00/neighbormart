@@ -50,6 +50,7 @@ router.get('/customer/products/:id', customerProductController.getProduct);
 router.get('/customer/categories', customerProductController.listCategories);
 router.post('/customer/reviews', customerAuthenticate, customerProductController.submitReview);
 router.post('/customer/complaints', customerAuthenticate, customerProductController.submitComplaint);
+router.post('/customer/driver-ratings', customerAuthenticate, customerProductController.rateDriver);
 
 // ─── Owner CRM ───────────────────────────────────────────────────────────────
 router.get('/crm/customers', authenticate, requireOwner, crmController.listCustomers);

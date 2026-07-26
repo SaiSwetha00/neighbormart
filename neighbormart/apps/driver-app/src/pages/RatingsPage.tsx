@@ -12,7 +12,7 @@ export default function RatingsPage() {
 
   return (
     <div className="p-5 space-y-5">
-      <h1 className="text-xl font-bold text-gray-900">Ratings</h1>
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Ratings</h1>
 
       {ratings.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-2xl p-5 text-center">
@@ -22,7 +22,7 @@ export default function RatingsPage() {
               <Star key={i} size={20} className={i <= Math.round(avg) ? 'text-yellow-500 fill-yellow-400' : 'text-gray-300'} />
             ))}
           </div>
-          <div className="text-sm text-gray-500 mt-2">Based on {ratings.length} reviews</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">Based on {ratings.length} reviews</div>
         </div>
       )}
 
@@ -30,7 +30,7 @@ export default function RatingsPage() {
 
       <div className="space-y-3">
         {ratings.map((r: any) => (
-          <div key={r.id} className="bg-white rounded-xl border border-gray-200 p-4">
+          <div key={r.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-0.5">
                 {[1,2,3,4,5].map(i => (
@@ -39,7 +39,7 @@ export default function RatingsPage() {
               </div>
               <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString('en-IN')}</span>
             </div>
-            <p className="text-sm text-gray-700">{r.comment || <span className="italic text-gray-400">No comment</span>}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{r.comment || <span className="italic text-gray-400">No comment</span>}</p>
           </div>
         ))}
         {ratings.length === 0 && !isLoading && (

@@ -94,10 +94,10 @@ export default function DeliveryPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 dark:bg-gray-950 min-h-screen">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage drivers, zones, and live deliveries</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Delivery Management</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Manage drivers, zones, and live deliveries</p>
       </div>
 
       {/* Stats */}
@@ -111,19 +111,19 @@ export default function DeliveryPage() {
             { label: 'Online Drivers', value: dashboard.onlineDrivers, color: 'text-indigo-600' },
             { label: 'Total Drivers', value: dashboard.totalDrivers, color: 'text-gray-700' },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4 text-center">
+            <div key={s.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 text-center">
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-gray-500 mt-1">{s.label}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-1 w-fit">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${tab === t.key ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>
             {t.label}
           </button>
         ))}
@@ -132,10 +132,10 @@ export default function DeliveryPage() {
       {/* Live Tab */}
       {tab === 'live' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-900">Active Deliveries</h2>
-              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">{liveDeliveries.length} active</span>
+              <h2 className="font-semibold text-gray-900 dark:text-white">Active Deliveries</h2>
+              <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">{liveDeliveries.length} active</span>
             </div>
 
             {liveDeliveries.length === 0 ? (
@@ -146,15 +146,15 @@ export default function DeliveryPage() {
             ) : (
               <div className="space-y-3">
                 {liveDeliveries.map((d: any) => (
-                  <div key={d.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
+                  <div key={d.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
                     <div>
-                      <div className="font-medium text-gray-900">{d.order?.customer?.name || 'Unknown Customer'}</div>
-                      <div className="text-sm text-gray-500">{d.addressText || 'Address not set'}</div>
-                      <div className="text-sm text-gray-500">Driver: {d.driver?.user?.name || 'Unassigned'}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{d.order?.customer?.user?.name || 'Unknown Customer'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">{d.addressText || 'Address not set'}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Driver: {d.driver?.user?.name || 'Unassigned'}</div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLOR[d.status] || 'bg-gray-100 text-gray-600'}`}>{d.status}</span>
-                      {d.estimatedMins && <span className="text-xs text-gray-500">~{d.estimatedMins} min</span>}
+                      {d.estimatedMins && <span className="text-xs text-gray-500 dark:text-gray-400">~{d.estimatedMins} min</span>}
                     </div>
                   </div>
                 ))}
@@ -164,16 +164,16 @@ export default function DeliveryPage() {
 
           {/* Driver locations */}
           {dashboard?.drivers && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Driver Status</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Driver Status</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                 {dashboard.drivers.map((d: any) => (
-                  <div key={d.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div key={d.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">
                       {d.user?.name?.[0] || 'D'}
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{d.user?.name}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-white">{d.user?.name}</div>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${DRIVER_COLOR[d.status] || 'bg-gray-100'}`}>{d.status}</span>
                     </div>
                     <div className="ml-auto text-xs text-yellow-600">★ {d.rating?.toFixed(1)}</div>
@@ -187,31 +187,31 @@ export default function DeliveryPage() {
 
       {/* Orders Tab */}
       {tab === 'orders' && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Delivery Orders</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="p-4 border-b dark:border-gray-700 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900 dark:text-white">Delivery Orders</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b">
+              <thead className="bg-gray-50 dark:bg-gray-900 border-b dark:border-gray-700">
                 <tr>
                   {['Order', 'Customer', 'Driver', 'Slot', 'Status', 'Fee', 'Scheduled'].map(h => (
-                    <th key={h} className="text-left px-4 py-3 text-gray-600 font-medium">{h}</th>
+                    <th key={h} className="text-left px-4 py-3 text-gray-600 dark:text-gray-400 font-medium">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y">
+              <tbody className="divide-y dark:divide-gray-700">
                 {orders.map((o: any) => (
-                  <tr key={o.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-mono text-xs text-gray-700">{o.orderId.slice(-8)}</td>
-                    <td className="px-4 py-3">{o.order?.customer?.name || '—'}</td>
+                  <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 dark:text-gray-300">
+                    <td className="px-4 py-3 font-mono text-xs text-gray-700 dark:text-gray-400">{o.orderId.slice(-8)}</td>
+                    <td className="px-4 py-3">{o.order?.customer?.user?.name || '—'}</td>
                     <td className="px-4 py-3">{o.driver?.user?.name || <span className="text-gray-400 italic">Unassigned</span>}</td>
                     <td className="px-4 py-3">{o.slot ? `${o.slot.startTime}–${o.slot.endTime}` : '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLOR[o.status] || 'bg-gray-100'}`}>{o.status}</span>
                     </td>
                     <td className="px-4 py-3">₹{o.deliveryFee?.toFixed(0)}</td>
-                    <td className="px-4 py-3 text-gray-500">{o.scheduledAt ? new Date(o.scheduledAt).toLocaleString() : '—'}</td>
+                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{o.scheduledAt ? new Date(o.scheduledAt).toLocaleString() : '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -225,26 +225,26 @@ export default function DeliveryPage() {
       {tab === 'zones' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Zones */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Delivery Zones</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Delivery Zones</h2>
             <div className="space-y-2 mb-4">
               {zones.map((z: any) => (
-                <div key={z.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={z.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-sm">{z.name}</div>
-                    <div className="text-xs text-gray-500">Base ₹{z.baseFee} + ₹{z.perKmFee}/km · max {z.maxDistance}km</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Base ₹{z.baseFee} + ₹{z.perKmFee}/km · max {z.maxDistance}km</div>
                   </div>
                   <button onClick={() => deleteZone.mutate(z.id)} className="text-red-500 hover:text-red-700 text-xs">Delete</button>
                 </div>
               ))}
             </div>
-            <div className="border-t pt-4 space-y-2">
-              <h3 className="text-sm font-medium text-gray-700">Add Zone</h3>
-              <input className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Zone name" value={zoneForm.name} onChange={e => setZoneForm(f => ({ ...f, name: e.target.value }))} />
+            <div className="border-t dark:border-gray-700 pt-4 space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Add Zone</h3>
+              <input className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Zone name" value={zoneForm.name} onChange={e => setZoneForm(f => ({ ...f, name: e.target.value }))} />
               <div className="grid grid-cols-3 gap-2">
-                <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Base fee" type="number" value={zoneForm.baseFee} onChange={e => setZoneForm(f => ({ ...f, baseFee: e.target.value }))} />
-                <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Per km" type="number" value={zoneForm.perKmFee} onChange={e => setZoneForm(f => ({ ...f, perKmFee: e.target.value }))} />
-                <input className="border rounded-lg px-3 py-2 text-sm" placeholder="Max km" type="number" value={zoneForm.maxDistance} onChange={e => setZoneForm(f => ({ ...f, maxDistance: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Base fee" type="number" value={zoneForm.baseFee} onChange={e => setZoneForm(f => ({ ...f, baseFee: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Per km" type="number" value={zoneForm.perKmFee} onChange={e => setZoneForm(f => ({ ...f, perKmFee: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Max km" type="number" value={zoneForm.maxDistance} onChange={e => setZoneForm(f => ({ ...f, maxDistance: e.target.value }))} />
               </div>
               <button onClick={() => createZone.mutate({ name: zoneForm.name, polygonJson: {}, baseFee: +zoneForm.baseFee, perKmFee: +zoneForm.perKmFee, maxDistance: +zoneForm.maxDistance })}
                 disabled={!zoneForm.name}
@@ -255,32 +255,32 @@ export default function DeliveryPage() {
           </div>
 
           {/* Slots */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Delivery Slots</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h2 className="font-semibold text-gray-900 dark:text-white mb-4">Delivery Slots</h2>
             <div className="space-y-2 mb-4">
               {slots.map((s: any) => (
-                <div key={s.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={s.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <div>
                     <div className="font-medium text-sm">{s.zone?.name} · {DAYS[s.dayOfWeek]}</div>
-                    <div className="text-xs text-gray-500">{s.startTime}–{s.endTime} · max {s.maxOrders} orders</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{s.startTime}–{s.endTime} · max {s.maxOrders} orders</div>
                   </div>
                   <button onClick={() => deleteSlot.mutate(s.id)} className="text-red-500 hover:text-red-700 text-xs">Delete</button>
                 </div>
               ))}
             </div>
-            <div className="border-t pt-4 space-y-2">
-              <h3 className="text-sm font-medium text-gray-700">Add Slot</h3>
-              <select className="w-full border rounded-lg px-3 py-2 text-sm" value={slotForm.zoneId} onChange={e => setSlotForm(f => ({ ...f, zoneId: e.target.value }))}>
+            <div className="border-t dark:border-gray-700 pt-4 space-y-2">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Add Slot</h3>
+              <select className="w-full border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={slotForm.zoneId} onChange={e => setSlotForm(f => ({ ...f, zoneId: e.target.value }))}>
                 <option value="">Select zone</option>
                 {zones.map((z: any) => <option key={z.id} value={z.id}>{z.name}</option>)}
               </select>
               <div className="grid grid-cols-2 gap-2">
-                <select className="border rounded-lg px-3 py-2 text-sm" value={slotForm.dayOfWeek} onChange={e => setSlotForm(f => ({ ...f, dayOfWeek: e.target.value }))}>
+                <select className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={slotForm.dayOfWeek} onChange={e => setSlotForm(f => ({ ...f, dayOfWeek: e.target.value }))}>
                   {DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
                 </select>
-                <input className="border rounded-lg px-3 py-2 text-sm" type="number" placeholder="Max orders" value={slotForm.maxOrders} onChange={e => setSlotForm(f => ({ ...f, maxOrders: e.target.value }))} />
-                <input className="border rounded-lg px-3 py-2 text-sm" type="time" value={slotForm.startTime} onChange={e => setSlotForm(f => ({ ...f, startTime: e.target.value }))} />
-                <input className="border rounded-lg px-3 py-2 text-sm" type="time" value={slotForm.endTime} onChange={e => setSlotForm(f => ({ ...f, endTime: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" type="number" placeholder="Max orders" value={slotForm.maxOrders} onChange={e => setSlotForm(f => ({ ...f, maxOrders: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" type="time" value={slotForm.startTime} onChange={e => setSlotForm(f => ({ ...f, startTime: e.target.value }))} />
+                <input className="border rounded-lg px-3 py-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" type="time" value={slotForm.endTime} onChange={e => setSlotForm(f => ({ ...f, endTime: e.target.value }))} />
               </div>
               <button onClick={() => createSlot.mutate({ zoneId: slotForm.zoneId, dayOfWeek: +slotForm.dayOfWeek, startTime: slotForm.startTime, endTime: slotForm.endTime, maxOrders: +slotForm.maxOrders })}
                 disabled={!slotForm.zoneId}
@@ -294,23 +294,23 @@ export default function DeliveryPage() {
 
       {/* Drivers Tab */}
       {tab === 'drivers' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-900 mb-4">All Drivers</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="font-semibold text-gray-900 dark:text-white mb-4">All Drivers</h2>
           {dashboard?.drivers?.length === 0 && <div className="text-center py-12 text-gray-400">No drivers registered yet</div>}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(dashboard?.drivers || []).map((d: any) => (
-              <div key={d.id} className="border rounded-xl p-4 space-y-2">
+              <div key={d.id} className="border dark:border-gray-700 rounded-xl p-4 space-y-2 dark:bg-gray-750">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-lg font-bold text-indigo-700">
                     {d.user?.name?.[0] || 'D'}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{d.user?.name}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{d.user?.name}</div>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${DRIVER_COLOR[d.status] || 'bg-gray-100'}`}>{d.status}</span>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">★ {d.rating?.toFixed(2)} rating</div>
-                {d.currentLat && <div className="text-xs text-gray-400">📍 {d.currentLat.toFixed(4)}, {d.currentLng?.toFixed(4)}</div>}
+                <div className="text-sm text-gray-600 dark:text-gray-400">★ {d.rating?.toFixed(2)} rating</div>
+                {d.currentLat && <div className="text-xs text-gray-400 dark:text-gray-500">📍 {d.currentLat.toFixed(4)}, {d.currentLng?.toFixed(4)}</div>}
               </div>
             ))}
           </div>
@@ -321,15 +321,15 @@ export default function DeliveryPage() {
       {tab === 'performance' && (
         <div className="space-y-4">
           {performance.map((d: any) => (
-            <div key={d.id} className="bg-white rounded-xl border border-gray-200 p-6">
+            <div key={d.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center font-bold text-indigo-700">
                     {d.name?.[0] || 'D'}
                   </div>
                   <div>
-                    <div className="font-medium text-gray-900">{d.name}</div>
-                    <div className="text-sm text-gray-500">{d.totalDeliveries} total deliveries</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{d.name}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">{d.totalDeliveries} total deliveries</div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -339,9 +339,9 @@ export default function DeliveryPage() {
               </div>
               {d.recentRatings?.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recent Reviews</div>
+                  <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Recent Reviews</div>
                   {d.recentRatings.slice(0, 3).map((r: any) => (
-                    <div key={r.id} className="flex items-center gap-2 text-sm text-gray-600">
+                    <div key={r.id} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <span className="text-yellow-500">{'★'.repeat(r.rating)}</span>
                       <span>{r.comment || 'No comment'}</span>
                     </div>

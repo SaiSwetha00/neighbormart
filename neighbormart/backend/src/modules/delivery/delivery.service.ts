@@ -31,7 +31,7 @@ export async function getDeliveryOrders(storeId: string, status?: string) {
     orderBy: { createdAt: 'desc' },
     take: 100,
     include: {
-      order: { select: { id: true, total: true, customer: { select: { name: true, phone: true } } } },
+      order: { select: { id: true, total: true, customer: { select: { user: { select: { name: true, phone: true } } } } } },
       driver: { select: { id: true, user: { select: { name: true, phone: true } } } },
       slot: { select: { startTime: true, endTime: true } },
     },
@@ -85,10 +85,10 @@ export async function deleteSlot(id: string) {
 
 export async function getLiveDeliveries(storeId: string) {
   return prisma.delivery.findMany({
-    where: { storeId, status: { in: ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'] } },
+    where: { storeId, status: { in: ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT', 'PENDING'] } },
     include: {
       driver: { select: { currentLat: true, currentLng: true, user: { select: { name: true } } } },
-      order: { select: { total: true, customer: { select: { name: true } } } },
+      order: { select: { total: true, customer: { select: { user: { select: { name: true } } } } } },
     },
   });
 }
@@ -98,7 +98,7 @@ export async function getOrderTracking(orderId: string) {
     where: { orderId },
     include: {
       driver: { select: { currentLat: true, currentLng: true, user: { select: { name: true, phone: true } } } },
-      order: { include: { tracking: { orderBy: { createdAt: 'asc' } } } },
+      order: { include: { tracking: { orderBy: { timestamp: 'asc' } } } },
     },
   });
 }

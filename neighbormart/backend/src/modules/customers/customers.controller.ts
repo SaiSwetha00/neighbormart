@@ -544,4 +544,22 @@ export const customerProductController = {
       return sendError(res, err.message, 500);
     }
   },
+
+  async rateDriver(req: AuthRequest, res: Response) {
+    try {
+      const customer = await prisma.customer.findUnique({ where: { userId: req.user!.userId } });
+      if (!customer) return sendError(res, 'Customer not found', 404);
+      const { driverId, orderId, rating, comment } = req.body;
+      if (!driverId || !rating) return sendError(res, 'driverId and rating are required', 400);
+      const ratingRecord = await prisma.driverRating.create({
+        data: { driverId, customerId: customer.id, orderId, rating: Number(rating), comment },
+      });
+      // Update driver average rating
+      const avg = await prisma.driverRating.aggregate({ where: { driverId }, _avg: { rating: true } });
+      await prisma.driver.update({ where: { id: driverId }, data: { rating: avg._avg.rating ?? 5 } });
+      return sendSuccess(res, ratingRecord, 'Rating submitted', 201);
+    } catch (err: any) {
+      return sendError(res, err.message, 500);
+    }
+  },
 };

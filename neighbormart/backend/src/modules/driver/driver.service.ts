@@ -31,15 +31,15 @@ export async function getTodayDeliveries(userId: string) {
   const driver = await prisma.driver.findUnique({ where: { userId } });
   if (!driver) throw new Error('Driver profile not found');
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   return prisma.delivery.findMany({
-    where: { driverId: driver.id, createdAt: { gte: today } },
+    where: {
+      driverId: driver.id,
+      status: { in: ['ASSIGNED', 'IN_TRANSIT', 'PICKED_UP', 'PENDING'] },
+    },
     orderBy: { createdAt: 'asc' },
     include: {
       order: {
-        include: { customer: { select: { name: true, phone: true } }, items: { include: { product: { select: { name: true } } } } },
+        include: { customer: { select: { user: { select: { name: true, phone: true } } } }, items: { include: { product: { select: { name: true } } } } },
       },
     },
   });
@@ -62,13 +62,23 @@ export async function updateDeliveryStatus(userId: string, deliveryId: string, s
   if (status === 'DELIVERED') {
     await prisma.driver.update({ where: { id: driver.id }, data: { totalDeliveries: { increment: 1 } } });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    await (prisma.driverEarning as any).upsert({
-      where: { driverId_date: { driverId: driver.id, date: today } },
-      create: { driverId: driver.id, storeId: driver.storeId, date: today, deliveries: 1, baseEarning: delivery.deliveryFee * 0.8, totalEarning: delivery.deliveryFee * 0.8 },
-      update: { deliveries: { increment: 1 }, baseEarning: { increment: delivery.deliveryFee * 0.8 }, totalEarning: { increment: delivery.deliveryFee * 0.8 } },
+    const now = new Date();
+    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const tomorrowUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+    const earning = delivery.deliveryFee * 0.8;
+    const existingEarning = await prisma.driverEarning.findFirst({
+      where: { driverId: driver.id, date: { gte: todayUTC, lt: tomorrowUTC } },
     });
+    if (existingEarning) {
+      await prisma.driverEarning.update({
+        where: { id: existingEarning.id },
+        data: { deliveries: { increment: 1 }, baseEarning: { increment: earning }, totalEarning: { increment: earning } },
+      });
+    } else {
+      await prisma.driverEarning.create({
+        data: { driverId: driver.id, storeId: driver.storeId, date: todayUTC, deliveries: 1, baseEarning: earning, totalEarning: earning },
+      });
+    }
   }
 
   io.to(`store:${driver.storeId}`).emit('order-status-update', { deliveryId, status, driverId: driver.id });

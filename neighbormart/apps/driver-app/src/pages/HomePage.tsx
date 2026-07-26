@@ -30,7 +30,7 @@ export default function HomePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Hello, {driver?.name?.split(' ')[0] || 'Driver'} 👋</h1>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">Hello, {driver?.name?.split(' ')[0] || 'Driver'} 👋</h1>
           <p className="text-sm text-gray-500">{new Date().toLocaleDateString('en-IN', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
         <div className={`w-3 h-3 rounded-full ${online ? 'bg-green-500' : 'bg-gray-400'}`} />
@@ -59,11 +59,11 @@ export default function HomePage() {
             { icon: Star, label: 'Rating', value: driver.rating?.toFixed(1), color: 'text-yellow-600 bg-yellow-50' },
             { icon: DollarSign, label: 'This week', value: `₹${perf?.totalEarned?.toFixed(0) || 0}`, color: 'text-green-600 bg-green-50' },
           ].map(s => (
-            <div key={s.label} className="bg-white rounded-xl border border-gray-100 p-4 text-center">
+            <div key={s.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4 text-center">
               <div className={`w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2 ${s.color}`}>
                 <s.icon size={16} />
               </div>
-              <div className="font-bold text-gray-900">{s.value}</div>
+              <div className="font-bold text-gray-900 dark:text-white">{s.value}</div>
               <div className="text-xs text-gray-500">{s.label}</div>
             </div>
           ))}
@@ -72,13 +72,13 @@ export default function HomePage() {
 
       {/* Recent ratings */}
       {perf?.recentRatings?.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Recent Reviews</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+          <h3 className="font-semibold text-gray-900 dark:text-white mb-3">Recent Reviews</h3>
           <div className="space-y-2">
             {perf.recentRatings.slice(0, 3).map((r: any) => (
               <div key={r.id} className="flex items-start gap-3 text-sm">
                 <span className="text-yellow-500 text-base">{'★'.repeat(r.rating)}</span>
-                <span className="text-gray-600">{r.comment || 'No comment'}</span>
+                <span className="text-gray-600 dark:text-gray-400">{r.comment || 'No comment'}</span>
               </div>
             ))}
           </div>

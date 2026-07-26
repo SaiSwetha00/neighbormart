@@ -15,12 +15,16 @@ export default function App() {
   useEffect(() => {
     const t = getToken();
     setAuthed(!!t);
+    // Apply dark mode based on OS preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
   }, []);
 
   if (!authed) return <LoginPage onLogin={() => setAuthed(true)} />;
 
   return (
-    <div className="max-w-md mx-auto min-h-screen bg-gray-50 relative pb-20">
+    <div className="max-w-md mx-auto min-h-screen bg-gray-50 dark:bg-gray-900 relative pb-20">
       <Routes>
         <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<HomePage />} />

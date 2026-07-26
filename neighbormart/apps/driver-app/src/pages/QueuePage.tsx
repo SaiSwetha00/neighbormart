@@ -39,7 +39,7 @@ export default function QueuePage() {
   return (
     <div className="p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">Today's Queue</h1>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Today's Queue</h1>
         <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full">{deliveries.length} orders</span>
       </div>
 
@@ -52,9 +52,9 @@ export default function QueuePage() {
       )}
 
       {deliveries.map((d: any) => (
-        <div key={d.id} className={`rounded-xl border-l-4 p-4 space-y-3 bg-white shadow-sm ${STATUS_COLOR[d.status] || 'border-gray-300'}`}>
+        <div key={d.id} className={`rounded-xl border-l-4 p-4 space-y-3 bg-white dark:bg-gray-800 shadow-sm ${STATUS_COLOR[d.status] || 'border-gray-300'}`}>
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-gray-900">{d.order?.customer?.name || 'Customer'}</span>
+            <span className="font-semibold text-gray-900">{d.order?.customer?.user?.name || 'Customer'}</span>
             <span className="text-xs bg-white border px-2 py-0.5 rounded-full text-gray-600">{d.status}</span>
           </div>
 
@@ -63,10 +63,10 @@ export default function QueuePage() {
             <span>{d.addressText || 'Address not set'}</span>
           </div>
 
-          {d.order?.customer?.phone && (
+          {d.order?.customer?.user?.phone && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Phone size={14} className="text-gray-400" />
-              <a href={`tel:${d.order.customer.phone}`} className="text-blue-600">{d.order.customer.phone}</a>
+              <a href={`tel:${d.order.customer.user.phone}`} className="text-blue-600">{d.order.customer.user.phone}</a>
             </div>
           )}
 

@@ -13,7 +13,7 @@ export default function EarningsPage() {
 
   return (
     <div className="p-5 space-y-5">
-      <h1 className="text-xl font-bold text-gray-900">Earnings</h1>
+      <h1 className="text-xl font-bold text-gray-900 dark:text-white">Earnings</h1>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-green-50 rounded-2xl p-4 border border-green-200">
@@ -28,17 +28,17 @@ export default function EarningsPage() {
 
       {isLoading && <div className="text-center py-8 text-gray-400">Loading…</div>}
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b bg-gray-50 flex items-center gap-2">
-          <TrendingUp size={16} className="text-gray-500" />
-          <span className="font-medium text-sm text-gray-700">Daily Breakdown</span>
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div className="px-4 py-3 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center gap-2">
+          <TrendingUp size={16} className="text-gray-500 dark:text-gray-400" />
+          <span className="font-medium text-sm text-gray-700 dark:text-gray-300">Daily Breakdown</span>
         </div>
-        <div className="divide-y">
+        <div className="divide-y dark:divide-gray-700">
           {earnings.map((e: any) => (
             <div key={e.id} className="flex items-center justify-between px-4 py-3">
               <div>
-                <div className="text-sm font-medium text-gray-900">{new Date(e.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-                <div className="text-xs text-gray-500">{e.deliveries} deliveries</div>
+                <div className="text-sm font-medium text-gray-900 dark:text-white">{new Date(e.date).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">{e.deliveries} deliveries</div>
               </div>
               <div className="text-right">
                 <div className="font-semibold text-green-700">₹{e.totalEarning.toFixed(0)}</div>

@@ -147,6 +147,24 @@ export const customerOrderController = {
         await prisma.product.update({ where: { id: item.productId }, data: { stockQty: { decrement: item.quantity } } });
       }
 
+      // Auto-create Delivery record for DELIVERY type orders
+      if (order.type === 'DELIVERY') {
+        const savedAddr = deliveryAddressId
+          ? await prisma.savedAddress.findUnique({ where: { id: deliveryAddressId } })
+          : null;
+        await prisma.delivery.create({
+          data: {
+            orderId: order.id,
+            storeId: customer.storeId,
+            status: 'PENDING',
+            deliveryFee: 0,
+            addressText: savedAddr ? `${savedAddr.fullAddress}, ${savedAddr.city || ''}`.trim() : undefined,
+            addressLat: savedAddr?.lat ?? undefined,
+            addressLng: savedAddr?.lng ?? undefined,
+          },
+        });
+      }
+
       // Update promotion usage
       for (const promoId of promoIds) {
         await prisma.promotion.update({ where: { id: promoId }, data: { usedCount: { increment: 1 } } });
