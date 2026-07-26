@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { POStatus } from '@prisma/client';
 import type {
   CreateSupplierInput,
   UpdateSupplierInput,
@@ -187,7 +188,7 @@ export async function updatePurchaseOrder(id: string, data: UpdatePOInput) {
     }
     return tx.purchaseOrder.update({
       where: { id },
-      data: { ...poData, expectedDate: poData.expectedDate ? new Date(poData.expectedDate) : undefined } as any,
+      data: { expectedDate: poData.expectedDate ? new Date(poData.expectedDate) : undefined, ...poData } as any,
       include: {
         supplier: { select: { id: true, name: true } },
         items: { include: { product: { select: { id: true, name: true } } } },
@@ -199,7 +200,7 @@ export async function updatePurchaseOrder(id: string, data: UpdatePOInput) {
 export async function updatePOStatus(id: string, status: string) {
   const po = await prisma.purchaseOrder.findUnique({ where: { id } });
   if (!po) throw new Error('Purchase order not found');
-  return prisma.purchaseOrder.update({ where: { id }, data: { status: status as any } });
+  return prisma.purchaseOrder.update({ where: { id }, data: { status: status as POStatus } });
 }
 
 // ── Receive Goods (GRN) ───────────────────────────────────────────────────────

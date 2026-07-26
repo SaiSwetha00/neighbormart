@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import prisma from '../../config/database';
+import { UserStatus } from '@prisma/client';
 import type { CreateManagerInput, UpdateManagerInput, CreateStaffInput, UpdateStaffInput, UpdateProfileInput } from './users.schema';
 
 const USER_SELECT = { id: true, name: true, email: true, phone: true, status: true, photo: true, createdAt: true } as const;
@@ -104,7 +105,7 @@ export async function updateManager(id: string, data: UpdateManagerInput) {
 export async function updateManagerStatus(id: string, status: string) {
   const manager = await prisma.manager.findUnique({ where: { id } });
   if (!manager) throw new Error('Manager not found');
-  await prisma.user.update({ where: { id: manager.userId }, data: { status: status as any } });
+  await prisma.user.update({ where: { id: manager.userId }, data: { status: status as UserStatus } });
   return getManager(id);
 }
 
@@ -255,7 +256,7 @@ export async function updateStaff(id: string, data: UpdateStaffInput) {
 export async function updateStaffStatus(id: string, status: string) {
   const staff = await prisma.staff.findUnique({ where: { id } });
   if (!staff) throw new Error('Staff member not found');
-  await prisma.user.update({ where: { id: staff.userId }, data: { status: status as any } });
+  await prisma.user.update({ where: { id: staff.userId }, data: { status: status as UserStatus } });
   return getStaffMember(id);
 }
 
