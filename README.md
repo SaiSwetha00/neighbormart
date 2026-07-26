@@ -340,7 +340,7 @@ Steps per app:
 
 | App | URL |
 |-----|-----|
-| **Owner/Manager/Staff** | `[deploy to get URL]` |
-| **Customer App** | `[deploy to get URL]` |
-| **Driver App** | `[deploy to get URL]` |
-| **Backend API** | `[deploy to get URL]` |
+| **Owner/Manager/Staff** | https://web-omega-nine-73.vercel.app |
+| **Customer App** | https://customer-app-two-kappa.vercel.app |
+| **Driver App** | https://driver-app-flame-xi.vercel.app |
+| **Backend API** | https://neighbormart-api-production.up.railway.app |
