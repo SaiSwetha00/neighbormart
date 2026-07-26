@@ -2,38 +2,39 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const STORE_ID = 'store-prod-001';
+const STORE_ID = 'demo-store-001';
 
 const CATEGORIES = [
-  'Fruits & Vegetables',
   'Dairy & Eggs',
-  'Meat & Poultry',
-  'Seafood',
   'Bakery & Bread',
+  'Meat, Poultry & Seafood',
+  'Fresh Vegetables',
+  'Fresh Fruits',
+  'Grains, Rice & Flour',
+  'Cooking Essentials & Spices',
+  'Packaged & Canned Foods',
   'Beverages',
-  'Snacks & Chips',
-  'Frozen Foods',
-  'Canned & Packaged',
-  'Condiments & Sauces',
-  'Breakfast & Cereals',
-  'Pasta & Rice',
-  'Cleaning & Household',
-  'Personal Care & Beauty',
+  'Snacks & Confectionery',
+  'Personal Care & Hygiene',
+  'Household & Cleaning',
   'Baby & Kids',
-  'Pet Supplies',
   'Health & Wellness',
-  'International Foods',
+  'Frozen Foods',
+  'Ready-to-Eat & Deli',
+  'Organic & Specialty',
+  'Store & Packaging Supplies',
 ];
 
 async function main() {
-  console.log(`Seeding ${CATEGORIES.length} grocery categories for store ${STORE_ID}...`);
-
-  const result = await prisma.category.createMany({
-    skipDuplicates: true,
-    data: CATEGORIES.map((name) => ({ storeId: STORE_ID, name })),
-  });
-
-  console.log(`Done. Created ${result.count} categories (skipped duplicates).`);
+  for (const name of CATEGORIES) {
+    await prisma.category.upsert({
+      where: { storeId_name: { storeId: STORE_ID, name } },
+      update: {},
+      create: { storeId: STORE_ID, name },
+    });
+    console.log(`Seeded: ${name}`);
+  }
+  console.log('All categories seeded!');
 }
 
 main()
