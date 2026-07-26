@@ -33,6 +33,8 @@ const SalesPage = lazy(() => import('@/pages/owner/SalesPage'));
 const FinancePage = lazy(() => import('@/pages/owner/FinancePage'));
 const PromotionsPage = lazy(() => import('@/pages/owner/PromotionsPage'));
 const CustomersPage = lazy(() => import('@/pages/owner/CustomersPage'));
+const ReportsPage = lazy(() => import('@/pages/owner/ReportsPage'));
+const AIDashboardPage = lazy(() => import('@/pages/owner/AIDashboardPage'));
 
 // Manager pages (lazy loaded)
 const ManagerDashboard = lazy(() => import('@/pages/manager/DashboardPage'));
@@ -122,6 +124,8 @@ export default function App() {
             <Route path="finance" element={<FinancePage />} />
             <Route path="promotions" element={<PromotionsPage />} />
             <Route path="customers" element={<CustomersPage />} />
+            <Route path="reports" element={<ReportsPage />} />
+            <Route path="ai" element={<AIDashboardPage />} />
           </Route>
 
           {/* ── Manager routes ────────────────────────────────────── */}

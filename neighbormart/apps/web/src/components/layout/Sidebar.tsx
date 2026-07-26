@@ -19,6 +19,8 @@ import {
   Gift,
   UserCheck,
   ShoppingCart,
+  FileBarChart,
+  Bot,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/stores/auth.store';
@@ -49,6 +51,8 @@ const ownerNav: NavItem[] = [
   { path: '/owner/team', icon: Users, label: 'Team' },
   { path: '/owner/schedule', icon: Calendar, label: 'Schedule' },
   { path: '/owner/audit-log', icon: ClipboardList, label: 'Audit Log' },
+  { path: '/owner/reports', icon: FileBarChart, label: 'Reports' },
+  { path: '/owner/ai', icon: Bot, label: 'AI Center' },
   { path: '/owner/settings', icon: Settings, label: 'Settings' },
 ];
 

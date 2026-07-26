@@ -29,6 +29,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AIAlertsPanel } from '@/components/ai/AIAlertsPanel';
 import { formatCurrency, formatNumber, formatRelativeTime } from '@/utils/format';
 import { useAuthStore } from '@/stores/auth.store';
 import { Link, useNavigate } from 'react-router-dom';
@@ -668,7 +669,10 @@ export default function OwnerDashboardPage() {
           {/* RIGHT — Alerts & Activity */}
           <div className="flex flex-col gap-4 lg:col-span-2">
 
-            {/* a) Alerts Panel */}
+            {/* a) AI Alerts Panel */}
+            <AIAlertsPanel />
+
+            {/* b) Inventory Alerts Panel */}
             <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">

@@ -4,6 +4,7 @@ import { useUIStore } from '@/stores/ui.store';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { NotificationDrawer } from './NotificationDrawer';
+import { AIChatDrawer } from '../ai/AIChatDrawer';
 
 export function AppLayout() {
   const { sidebarOpen } = useUIStore();
@@ -31,6 +32,9 @@ export function AppLayout() {
 
       {/* Notification drawer */}
       <NotificationDrawer />
+
+      {/* AI Chat drawer */}
+      <AIChatDrawer />
     </div>
   );
 }

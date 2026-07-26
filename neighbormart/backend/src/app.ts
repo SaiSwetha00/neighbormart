@@ -24,6 +24,9 @@ import salesRoutes from './modules/sales/sales.routes';
 import financeRoutes from './modules/finance/finance.routes';
 import promotionsRoutes from './modules/promotions/promotions.routes';
 import notificationsRoutes from './modules/notifications/notifications.routes';
+import aiRoutes from './modules/ai/ai.routes';
+import searchRoutes from './modules/search/search.routes';
+import analyticsRoutes from './modules/analytics/analytics.routes';
 
 const app = express();
 
@@ -77,6 +80,9 @@ app.use('/api', salesRoutes);
 app.use('/api', financeRoutes);
 app.use('/api', promotionsRoutes);
 app.use('/api', notificationsRoutes);
+app.use('/api', aiRoutes);
+app.use('/api', searchRoutes);
+app.use('/api', analyticsRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

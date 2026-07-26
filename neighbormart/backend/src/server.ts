@@ -4,6 +4,7 @@ import app from './app';
 import { config } from './config';
 import { logger } from './utils/logger';
 import prisma from './config/database';
+import { startProactiveJobs } from './jobs/proactive';
 
 const httpServer = createServer(app);
 
@@ -68,6 +69,7 @@ httpServer.listen(config.port, () => {
   logger.info(
     `NeighborMart API running on port ${config.port} [${config.nodeEnv}]`
   );
+  startProactiveJobs();
 });
 
 export default httpServer;

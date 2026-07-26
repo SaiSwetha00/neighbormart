@@ -231,6 +231,10 @@ model Store {
   taxConfigs          TaxConfig[]
   giftCards           GiftCard[]
   posSessions         POSSession[]
+  aiConversations     AIConversation[]
+  aiInsights          AIInsight[]
+  aiActions           AIAction[]
+  reports             Report[]
 
   @@map("stores")
 }
@@ -268,6 +272,7 @@ model User {
   expensesLogged     Expense[]        @relation("ExpenseLoggedBy")
   expensesApproved   Expense[]        @relation("ExpenseApprovedBy")
   posSessions        POSSession[]     @relation("POSCashier")
+  aiConversations    AIConversation[]
 
   @@map("users")
 }
@@ -1178,4 +1183,67 @@ model AuditLog {
   user  User?  @relation(fields: [userId], references: [id])
 
   @@map("audit_logs")
+}
+
+// ─── Phase 3: AI & Reports ────────────────────────────────────────────────────
+
+model AIConversation {
+  id        String   @id @default(cuid())
+  storeId   String
+  userId    String
+  role      String
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  store Store @relation(fields: [storeId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("ai_conversations")
+}
+
+model AIInsight {
+  id          String    @id @default(cuid())
+  storeId     String
+  type        String
+  title       String
+  content     String    @db.Text
+  priority    String    @default("MEDIUM")
+  module      String?
+  isActedOn   Boolean   @default(false)
+  dismissedBy String?
+  createdAt   DateTime  @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("ai_insights")
+}
+
+model AIAction {
+  id          String   @id @default(cuid())
+  storeId     String
+  insightId   String?
+  actionTaken String
+  takenBy     String
+  takenAt     DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("ai_actions")
+}
+
+model Report {
+  id        String   @id @default(cuid())
+  storeId   String
+  name      String
+  type      String
+  config    Json     @default("{}")
+  createdBy String
+  schedule  Json?
+  lastRun   DateTime?
+  createdAt DateTime @default(now())
+
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@map("reports")
 }
