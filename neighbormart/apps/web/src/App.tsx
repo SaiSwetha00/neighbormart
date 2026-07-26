@@ -35,6 +35,7 @@ const PromotionsPage = lazy(() => import('@/pages/owner/PromotionsPage'));
 const CustomersPage = lazy(() => import('@/pages/owner/CustomersPage'));
 const ReportsPage = lazy(() => import('@/pages/owner/ReportsPage'));
 const AIDashboardPage = lazy(() => import('@/pages/owner/AIDashboardPage'));
+const DeliveryPage = lazy(() => import('@/pages/owner/DeliveryPage'));
 
 // Manager pages (lazy loaded)
 const ManagerDashboard = lazy(() => import('@/pages/manager/DashboardPage'));
@@ -126,6 +127,7 @@ export default function App() {
             <Route path="customers" element={<CustomersPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="ai" element={<AIDashboardPage />} />
+            <Route path="delivery" element={<DeliveryPage />} />
           </Route>
 
           {/* ── Manager routes ────────────────────────────────────── */}

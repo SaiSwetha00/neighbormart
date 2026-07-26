@@ -27,6 +27,9 @@ import notificationsRoutes from './modules/notifications/notifications.routes';
 import aiRoutes from './modules/ai/ai.routes';
 import searchRoutes from './modules/search/search.routes';
 import analyticsRoutes from './modules/analytics/analytics.routes';
+import deliveryRoutes from './modules/delivery/delivery.routes';
+import driverRoutes from './modules/driver/driver.routes';
+import routesRoutes from './modules/routes/routes.routes';
 
 const app = express();
 
@@ -83,6 +86,9 @@ app.use('/api', notificationsRoutes);
 app.use('/api', aiRoutes);
 app.use('/api', searchRoutes);
 app.use('/api', analyticsRoutes);
+app.use('/api/delivery', deliveryRoutes);
+app.use('/api/driver', driverRoutes);
+app.use('/api/routes', routesRoutes);
 
 // ─── Health check ────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

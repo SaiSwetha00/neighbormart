@@ -235,6 +235,12 @@ model Store {
   aiInsights          AIInsight[]
   aiActions           AIAction[]
   reports             Report[]
+  drivers             Driver[]
+  deliveryZones       DeliveryZone[]
+  deliverySlots       DeliverySlot[]
+  deliveries          Delivery[]
+  routes              Route[]
+  driverEarnings      DriverEarning[]
 
   @@map("stores")
 }
@@ -273,6 +279,7 @@ model User {
   expensesApproved   Expense[]        @relation("ExpenseApprovedBy")
   posSessions        POSSession[]     @relation("POSCashier")
   aiConversations    AIConversation[]
+  driver             Driver?
 
   @@map("users")
 }
@@ -480,6 +487,7 @@ model Order {
   returns         Return[]
   reviews         Review[]
   complaints      Complaint[]
+  delivery        Delivery?
 
   @@map("orders")
 }
@@ -1246,4 +1254,180 @@ model Report {
   store Store @relation(fields: [storeId], references: [id])
 
   @@map("reports")
+}
+
+// ─── Phase 4 Enums ───────────────────────────────────────────────────────────
+
+enum DriverStatus {
+  OFFLINE
+  ONLINE
+  ON_DELIVERY
+  BREAK
+}
+
+enum DeliveryStatus {
+  PENDING
+  ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  FAILED
+  RETURNED
+}
+
+enum RouteStatus {
+  DRAFT
+  OPTIMIZED
+  IN_PROGRESS
+  COMPLETED
+}
+
+// ─── Phase 4 Models ──────────────────────────────────────────────────────────
+
+model Driver {
+  id             String       @id @default(cuid())
+  userId         String       @unique
+  storeId        String
+  vehicleType    String       @default("BIKE")
+  vehiclePlate   String?
+  status         DriverStatus @default(OFFLINE)
+  currentLat     Float?
+  currentLng     Float?
+  lastLocationAt DateTime?
+  isAvailable    Boolean      @default(false)
+  rating         Float        @default(5.0)
+  totalDeliveries Int         @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id])
+  store     Store      @relation(fields: [storeId], references: [id])
+  deliveries Delivery[]
+  earnings   DriverEarning[]
+  ratings    DriverRating[]
+  routes     Route[]
+
+  @@map("drivers")
+}
+
+model DeliveryZone {
+  id          String   @id @default(cuid())
+  storeId     String
+  name        String
+  description String?
+  polygonJson Json
+  baseFee     Float    @default(0)
+  perKmFee    Float    @default(0)
+  maxDistance Float    @default(10)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  store Store          @relation(fields: [storeId], references: [id])
+  slots DeliverySlot[]
+
+  @@map("delivery_zones")
+}
+
+model DeliverySlot {
+  id         String   @id @default(cuid())
+  zoneId     String
+  storeId    String
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
+  maxOrders  Int      @default(10)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  zone       DeliveryZone @relation(fields: [zoneId], references: [id])
+  store      Store        @relation(fields: [storeId], references: [id])
+  deliveries Delivery[]
+
+  @@map("delivery_slots")
+}
+
+model Delivery {
+  id             String         @id @default(cuid())
+  orderId        String         @unique
+  storeId        String
+  driverId       String?
+  slotId         String?
+  status         DeliveryStatus @default(PENDING)
+  scheduledAt    DateTime?
+  pickedUpAt     DateTime?
+  deliveredAt    DateTime?
+  failedAt       DateTime?
+  failureReason  String?
+  deliveryFee    Float          @default(0)
+  addressLat     Float?
+  addressLng     Float?
+  addressText    String?
+  estimatedMins  Int?
+  proofPhotoUrl  String?
+  notes          String?        @db.Text
+  customerRating Int?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  order  Order        @relation(fields: [orderId], references: [id])
+  store  Store        @relation(fields: [storeId], references: [id])
+  driver Driver?      @relation(fields: [driverId], references: [id])
+  slot   DeliverySlot? @relation(fields: [slotId], references: [id])
+
+  @@map("deliveries")
+}
+
+model Route {
+  id          String      @id @default(cuid())
+  storeId     String
+  driverId    String
+  status      RouteStatus @default(DRAFT)
+  stopCount   Int         @default(0)
+  totalDistKm Float       @default(0)
+  estDurationMins Int     @default(0)
+  waypointsJson Json?
+  optimizedAt DateTime?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+
+  store  Store  @relation(fields: [storeId], references: [id])
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@map("routes")
+}
+
+model DriverEarning {
+  id          String   @id @default(cuid())
+  driverId    String
+  storeId     String
+  date        DateTime @db.Date
+  deliveries  Int      @default(0)
+  baseEarning Float    @default(0)
+  bonus       Float    @default(0)
+  deductions  Float    @default(0)
+  totalEarning Float   @default(0)
+  isPaid      Boolean  @default(false)
+  paidAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  driver Driver @relation(fields: [driverId], references: [id])
+  store  Store  @relation(fields: [storeId], references: [id])
+
+  @@unique([driverId, date])
+  @@map("driver_earnings")
+}
+
+model DriverRating {
+  id         String   @id @default(cuid())
+  driverId   String
+  orderId    String
+  customerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  driver Driver @relation(fields: [driverId], references: [id])
+
+  @@map("driver_ratings")
 }

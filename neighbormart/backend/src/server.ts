@@ -31,6 +31,14 @@ io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} left store room: ${storeId}`);
   });
 
+  socket.on('join-driver', (driverId: string) => {
+    socket.join(`driver:${driverId}`);
+  });
+
+  socket.on('join-order', (orderId: string) => {
+    socket.join(`order:${orderId}`);
+  });
+
   socket.on('disconnect', () => {
     logger.info(`Socket disconnected: ${socket.id}`);
   });
