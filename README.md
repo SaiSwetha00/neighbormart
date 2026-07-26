@@ -1,6 +1,6 @@
 # NeighborMart
 
-A full-stack grocery store management platform for owners, managers, staff, customers, and delivery drivers.
+A full-stack grocery store management platform — built across 5 phases, 26 modules, and 13 dashboards covering every role from store owner to delivery driver.
 
 ## Build Status
 
@@ -8,130 +8,69 @@ A full-stack grocery store management platform for owners, managers, staff, cust
 |-------|--------|-------------|
 | **Phase 1** | ✅ Complete | Core admin — products, inventory, suppliers, team, scheduling, audit |
 | **Phase 2** | ✅ Complete | POS, sales analytics, finance, CRM, promotions, customer app |
-| **Phase 3** | ✅ Complete | AI agent (mock), visual search, advanced analytics & reports |
+| **Phase 3** | ✅ Complete | AI agent, visual search, advanced analytics & reports |
 | **Phase 4** | ✅ Complete | Delivery system, driver app, route optimization, real-time tracking |
 | **Phase 5** | ✅ Complete | Marketing, multi-language i18n, accessibility, dark mode, super admin, security |
 
+---
+
+## Project Summary
+
+| Metric | Value |
+|--------|-------|
+| **Total modules** | 26 |
+| **Total dashboards** | 13 |
+| **User roles** | 5 (Owner, Manager, Staff, Customer, Driver) |
+| **Languages** | 5 (English, Spanish, French, Arabic, Hindi) |
+| **Backend endpoints** | 100+ REST routes |
+| **Real-time events** | 8 Socket.io event types |
+| **AI capabilities** | Mock engine + drop-in Claude API support |
+
+### The 13 Dashboards
+
+| # | Dashboard | Role |
+|---|-----------|------|
+| 1 | Owner Dashboard | Owner |
+| 2 | Products & Categories | Owner |
+| 3 | Inventory (6 tabs) | Owner |
+| 4 | Suppliers & Purchase Orders | Owner |
+| 5 | Team & Scheduling | Owner |
+| 6 | Sales Analytics | Owner |
+| 7 | Finance & P&L | Owner |
+| 8 | CRM & Loyalty | Owner |
+| 9 | Delivery Management | Owner |
+| 10 | Marketing & Campaigns | Owner |
+| 11 | AI Insights Dashboard | Owner |
+| 12 | Manager Operations | Manager |
+| 13 | Super Admin Dashboard | Super Admin |
+
+---
+
 ## Tech Stack
 
-**Frontend** — React 18, TypeScript, Vite, Tailwind CSS, Radix UI, React Query, Zustand, Recharts, i18next (5 languages)
+**Frontend**
+- React 18 + TypeScript + Vite
+- Tailwind CSS + Radix UI
+- React Query (server state) + Zustand (client state)
+- Recharts (data visualization)
+- i18next + react-i18next (5 languages, RTL support)
+- Socket.io-client (real-time updates)
 
-**Backend** — Node.js, Express, TypeScript, Prisma ORM, MySQL, Socket.io, node-cron, Helmet, express-rate-limit, Winston
+**Backend**
+- Node.js + Express + TypeScript
+- Prisma ORM + MySQL
+- Socket.io (WebSockets)
+- node-cron (scheduled jobs)
+- Helmet.js + express-rate-limit (security)
+- Winston + Morgan (structured logging)
+- JWT (HttpOnly cookies, refresh token rotation)
 
-**AI** — Smart mock AI engine (real DB data) · Drop-in replacement for Claude API (`claude-sonnet-4-6`)
+**AI**
+- Smart mock AI engine using real DB data — no API credits needed
+- Drop-in replacement: set `ANTHROPIC_API_KEY` in `.env` to switch to `claude-sonnet-4-6`
+- 14-intent detection, proactive hourly insights, visual search (Phase 3)
 
-## Features
-
-### Phase 1 — Core Management
-| Role | Pages |
-|------|-------|
-| **Owner** | Dashboard, Products, Categories, Inventory (6 tabs), Suppliers, Team, Schedule, Audit Log, Settings, Profile |
-| **Manager** | Dashboard, Inventory alerts |
-| **Staff** | Personal dashboard, shift and attendance info |
-
-- Role-based access: Owner → Manager → Staff
-- Inventory: low stock, expiry tracking, waste logs, adjustments, cycle counts
-- Supplier & purchase order management with GRN
-- Staff scheduling, attendance, leave requests
-- Full audit log for all store actions
-
-### Phase 2 — POS, Sales & Customer
-- **POS system** — cash drawer, barcode scan, split payments, returns
-- **Sales analytics** — revenue charts, top products, hourly trends
-- **Finance** — P&L, expense tracking, tax reports
-- **CRM** — customer profiles, loyalty points, tiers, gift cards
-- **Promotions** — percentage/fixed discounts, coupons, usage tracking
-- **Customer app** — browse products, cart, checkout, order tracking, loyalty
-
-### Phase 4 — Delivery & Logistics ✅
-- **Delivery zones** — polygon zones with base fee + per-km pricing, max distance
-- **Time slots** — day-of-week slots per zone with max-order caps
-- **Delivery management** — owner dashboard with 5 tabs: live map, orders queue, zones & slots, drivers, performance
-- **Driver assignment** — manager assigns drivers to DELIVERY orders; Socket.io pushes `delivery-assigned` and `new-delivery` events instantly
-- **Driver app** — mobile-first React web app (port 3001) with bottom nav
-  - Online/offline toggle, delivery queue, accept/reject orders
-  - GPS location updates broadcast live to store dashboard and customer order tracker
-  - Mark picked-up → delivered (proof photo URL) or failed (with reason)
-  - Daily earnings breakdown (80% of delivery fee), ratings history
-- **Customer live tracking** — order tracking endpoint returns driver GPS coords in real time
-- **Route optimization** — nearest-neighbour TSP heuristic with Haversine distance; no external API needed
-- **Batch assign** — assign multiple deliveries to one driver and auto-optimize route
-- **Driver ratings** — customers rate drivers after delivery; driver average auto-updates
-- **Socket.io events** — `driver-online/offline`, `driver-location`, `delivery-assigned`, `new-delivery`, `order-status-update`, `delivery-update`; rooms scoped to `store:`, `driver:`, `order:`
-- **Seed credentials** — `driver@neighbormart.com / password123`
-
-### Phase 5 — Marketing, i18n, Accessibility, Super Admin & Security ✅
-- **Marketing & Campaigns** (Module 22) — campaign CRUD, A/B testing, referral stats, flash sales
-  - Campaign types: EMAIL, SMS, PUSH, FLASH_SALE — target by customer tier
-  - A/B test creator with configurable traffic split
-  - Launch, pause, delete campaigns; open-rate analytics
-- **Multi-Language i18n** (Module 23) — English, Spanish, French, Arabic (RTL), Hindi
-  - Language switcher with flag icons in sidebar; persists to localStorage
-  - Browser auto-detect via `i18next-browser-languagedetector`
-  - RTL layout applied to Arabic via `dir="rtl"` on `<html>`
-- **Accessibility WCAG 2.1** (Module 24)
-  - Skip-to-content link (keyboard users reach main content instantly)
-  - `role="main"` + `aria-label` on main content area
-  - Font size control: S / M / L / XL (14–20px), persisted across sessions
-  - High contrast mode toggle (CSS class `high-contrast` on `<html>`)
-  - Reduce motion toggle (disables all CSS animations/transitions)
-  - `:focus-visible` ring on all interactive elements
-- **Complete Dark Mode** (Module 25) — all pages use `dark:` Tailwind classes; charts, modals, badges all theme-aware
-- **Super Admin Dashboard** (Module 26) — `/admin` route, SUPER_ADMIN role
-  - All Stores tab: activate/suspend any store
-  - All Users tab: paginated user list with GDPR erase (soft-delete/anonymize)
-  - Platform Revenue tab: total revenue, monthly orders, top stores
-  - AI Usage tab: conversation and insight counts, recent activity
-  - Platform Settings tab: feature flags, version info
-- **Security Hardening** (Module 27)
-  - Helmet.js security headers on every response
-  - Rate limiting: global 100 req/min on `/api`; routes include auth-specific guards
-  - Winston structured logging + Morgan HTTP access logs
-  - `GET /api/health` — uptime, timestamp, environment
-  - GDPR endpoints: `GET /api/admin/gdpr/export/:userId`, `DELETE /api/admin/gdpr/delete/:userId`
-
-### Phase 3 — AI Agent & Analytics ✅
-- **AI chat agent** — floating button on every page, role-aware responses for all 5 roles
-  - Owner: revenue trends, forecasts, staff status, proactive alerts
-  - Manager: operations summary, pending orders, expiry alerts
-  - Staff: product lookup, stock checks, return guidance
-  - Customer: order tracking, meal planning, product search, deals
-- **Mock AI engine** — uses real live DB data (no API credits needed)
-  - Intent detection across 14 categories
-  - Auto-switches to Claude API when a funded key is set in `.env`
-- **Proactive insights** — hourly cron checks (stock, revenue anomaly, expiry), 6 AM daily brief
-- **Visual search** — camera icon in customer app, image → product matches via Claude vision
-- **Advanced reports** — Sales, Inventory, Low Stock, Waste, Customer reports with AI summaries
-- **AI dashboard** — `/owner/ai` — insight feed, priority breakdown, conversation stats
-- **Report builder** — custom templates, saved reports, AI-generated summaries
-
-## Project Structure
-
-```
-neighbormart/
-├── apps/
-│   ├── web/               # Owner/Manager/Staff React app (port 5173)
-│   │   └── src/
-│   │       ├── pages/     # owner/, manager/, staff/, auth/
-│   │       ├── components/
-│   │       │   ├── ai/    # AIChatDrawer, AIInsightCard, AIAlertsPanel
-│   │       │   └── layout/
-│   │       └── stores/    # Zustand state
-│   ├── customer-app/      # Customer React app (port 3000)
-│   └── driver-app/        # Driver mobile-first React app (port 3001)
-│       └── src/
-│           ├── pages/     # Login, Home, Queue, ActiveDelivery, Earnings, Ratings
-│           ├── components/ # BottomNav
-│           └── services/  # auth.ts (cookie-based, DRIVER role)
-└── backend/               # Express API (port 5000)
-    ├── src/
-    │   ├── modules/       # auth, users, products, inventory, suppliers,
-    │   │                  # staff, orders, sales, finance, crm, promotions,
-    │   │                  # notifications, pos, ai, search, analytics,
-    │   │                  # delivery, driver, routes
-    │   └── jobs/          # proactive.ts — hourly cron + 6AM daily brief
-    └── prisma/            # schema + migrations + seed
-```
+---
 
 ## Getting Started
 
@@ -139,23 +78,28 @@ neighbormart/
 
 - Node.js 18+
 - npm
+- MySQL 8+
 
-### 1. Install dependencies
+### 1. Clone and install
 
 ```bash
-cd neighbormart/backend && npm install
+git clone https://github.com/SaiSwetha00/neighbormart.git
+cd neighbormart/neighbormart
+
+# Backend
+cd backend && npm install
+
+# Owner/Manager/Staff app
 cd ../apps/web && npm install
+
+# Customer app
+cd ../customer-app && npm install
+
+# Driver app
+cd ../driver-app && npm install
 ```
 
-### 2. Set up the database
-
-```bash
-cd neighbormart/backend
-npx prisma migrate dev
-npx prisma db seed
-```
-
-### 3. Configure environment
+### 2. Configure environment
 
 Create `neighbormart/backend/.env`:
 
@@ -167,15 +111,22 @@ PORT=5000
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
 
-# Optional — AI features work without this (mock AI uses real DB data)
-# Add a funded Anthropic key to switch from mock to real Claude:
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
+# Optional — leave blank to use the built-in mock AI
+ANTHROPIC_API_KEY=
 ```
 
-### 4. Start the servers
+### 3. Set up the database
 
 ```bash
-# Backend (port 5000)
+cd neighbormart/backend
+npx prisma migrate dev
+npx prisma db seed
+```
+
+### 4. Start all servers
+
+```bash
+# Backend API (port 5000)
 cd neighbormart/backend && npm run dev
 
 # Owner/Manager/Staff app (port 5173)
@@ -188,46 +139,101 @@ cd neighbormart/apps/customer-app && npm run dev
 cd neighbormart/apps/driver-app && npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173)
+Open [http://localhost:5173](http://localhost:5173) for the main app.
 
-### Seed credentials
+### Demo Credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| Owner | owner@neighbormart.com | password123 |
-| Manager | manager@neighbormart.com | password123 |
-| Staff | staff@neighbormart.com | password123 |
-| Customer | (register via customer app) | — |
-| Driver | driver@neighbormart.com | password123 |
+| Role | Email | Password | App |
+|------|-------|----------|-----|
+| **Owner** | owner@neighbormart.com | password123 | localhost:5173 |
+| **Manager** | manager@neighbormart.com | password123 | localhost:5173 |
+| **Staff** | staff@neighbormart.com | password123 | localhost:5173 |
+| **Customer** | Register via customer app | — | localhost:3000 |
+| **Driver** | driver@neighbormart.com | password123 | localhost:3001 |
 
-## AI Features
+---
 
-The AI agent works out of the box with no API key required. The mock AI engine:
-- Detects message intent (revenue, stock, expiry, orders, staff, customers, forecasts, meal planning…)
-- Queries the live database for real numbers in every response
-- Covers all 5 roles with role-appropriate depth and tone
-- Runs proactive hourly checks and a 6 AM daily brief
+## Features by Phase
 
-To switch to real Claude (`claude-sonnet-4-6`), set a funded `ANTHROPIC_API_KEY` in `.env` and restart the backend — no code changes needed.
+### Phase 1 — Core Management
+- Role-based access control: Owner → Manager → Staff
+- Product catalog with categories, pricing, and barcode support
+- Inventory: low stock alerts, expiry tracking, waste logs, adjustments, cycle counts
+- Supplier management with purchase orders and goods-received notes (GRN)
+- Staff scheduling, shift management, attendance tracking, leave requests
+- Full audit log for every store action
 
-## API
+### Phase 2 — POS, Sales & Customer
+- **POS system** — cash drawer, barcode scan, split payments, returns
+- **Sales analytics** — revenue charts, top products, hourly trends
+- **Finance** — P&L statement, expense tracking, tax reports
+- **CRM** — customer profiles, loyalty points, tier system (Bronze/Silver/Gold/Platinum), gift cards
+- **Promotions** — percentage and fixed-amount discounts, coupon codes, usage tracking
+- **Customer app** — browse products, cart, checkout, order tracking, loyalty dashboard
 
-All endpoints are prefixed with `/api`. The backend runs on port 5000; the Vite dev proxy forwards `/api` requests there.
+### Phase 3 — AI Agent & Analytics
+- **AI chat agent** — floating button on every page, role-aware (Owner/Manager/Staff/Customer)
+- **Mock AI engine** — 14-intent detection, queries live DB for real numbers every response
+- **Proactive insights** — hourly cron: low stock, revenue anomaly, expiry alerts; 6 AM daily brief
+- **Visual search** — camera icon in customer app, image → product matches
+- **Advanced reports** — Sales, Inventory, Low Stock, Waste, Customer reports with AI summaries
+- **AI dashboard** — `/owner/ai` — insight feed, priority breakdown, conversation stats
 
-Key route groups: `/auth`, `/dashboard`, `/products`, `/categories`, `/inventory`, `/suppliers`, `/staff`, `/managers`, `/store`, `/audit-logs`, `/profile`, `/orders`, `/sales`, `/finance`, `/crm`, `/promotions`, `/pos`, `/notifications`, `/ai`, `/search`, `/reports`, `/analytics`, `/delivery`, `/driver`, `/routes`, `/customer`, `/campaigns`, `/ab-tests`, `/referrals`, `/admin`
+### Phase 4 — Delivery & Logistics
+- **Delivery zones** — polygon zones with base fee + per-km pricing, max distance
+- **Time slots** — day-of-week slots per zone with order caps
+- **Delivery management** — 5-tab owner dashboard: live map, orders queue, zones & slots, drivers, performance
+- **Driver assignment** — manager assigns drivers; Socket.io pushes events instantly
+- **Driver app** — mobile-first (port 3001): online/offline, queue, accept/reject, GPS updates, mark delivered with proof photo
+- **Customer live tracking** — order tracking returns driver GPS coordinates in real time
+- **Route optimization** — nearest-neighbour TSP heuristic with Haversine distance; no external API
+- **Batch assign** — assign multiple deliveries to one driver with auto-optimized route
+- **Driver ratings** — customers rate after delivery; driver average auto-updates
 
-**Phase 5 endpoints:**
-- `GET/POST /api/campaigns` — list and create campaigns
-- `PUT/DELETE /api/campaigns/:id` — update/delete campaign
-- `POST /api/campaigns/:id/launch` — activate a campaign
-- `GET /api/campaigns/:id/analytics` — campaign performance data
-- `GET/POST /api/ab-tests` — A/B test management
-- `GET /api/referrals/stats` — referral program stats
-- `GET /api/admin/stores` — all stores (SUPER_ADMIN)
-- `PATCH /api/admin/stores/:id/status` — activate/suspend store
-- `GET /api/admin/users` — all users with pagination
-- `GET /api/admin/revenue` — platform revenue overview
-- `GET /api/admin/ai-usage` — AI conversation stats
-- `GET /api/admin/settings` — platform settings & feature flags
-- `GET /api/admin/gdpr/export/:userId` — GDPR data export
-- `DELETE /api/admin/gdpr/delete/:userId` — GDPR soft delete (anonymize)
+### Phase 5 — Marketing, i18n, Accessibility, Super Admin & Security
+- **Marketing & Campaigns** — EMAIL, SMS, PUSH, FLASH_SALE campaign types; A/B testing with traffic split; referral stats; campaign analytics (opens, clicks, conversions)
+- **Multi-language i18n** — English, Spanish, French, Arabic (RTL), Hindi; browser auto-detect; persists to localStorage
+- **Accessibility WCAG 2.1** — skip-to-content link, `role="main"`, font size control (S/M/L/XL), high-contrast mode, reduce-motion mode, `:focus-visible` ring
+- **Complete dark mode** — all 13 dashboards and every page fully theme-aware; toggle in sidebar
+- **Super Admin dashboard** — all stores overview, all users with GDPR erase, platform revenue, AI usage tracker, feature flags
+- **Security hardening** — Helmet.js CSP headers, rate limiting (100 req/15min), Winston structured logs, `GET /api/health`, GDPR export + soft-delete endpoints
+
+---
+
+## API Overview
+
+All endpoints prefixed with `/api`. Backend on port 5000; Vite dev proxy forwards `/api` requests there.
+
+**Route groups:**
+`/auth` · `/dashboard` · `/products` · `/categories` · `/inventory` · `/suppliers` · `/staff` · `/managers` · `/store` · `/audit-logs` · `/profile` · `/orders` · `/sales` · `/finance` · `/crm` · `/promotions` · `/pos` · `/notifications` · `/ai` · `/search` · `/reports` · `/analytics` · `/delivery` · `/driver` · `/routes` · `/customer` · `/campaigns` · `/ab-tests` · `/referrals` · `/admin`
+
+**Health check (no auth):**
+```
+GET /api/health  →  { status: "ok", timestamp, uptime, environment }
+```
+
+---
+
+## Project Structure
+
+```
+neighbormart/
+├── apps/
+│   ├── web/               # Owner/Manager/Staff React app (port 5173)
+│   │   └── src/
+│   │       ├── pages/     # owner/, manager/, staff/, auth/, admin/
+│   │       ├── components/
+│   │       │   ├── ai/    # AIChatDrawer, AIInsightCard, AIAlertsPanel
+│   │       │   ├── layout/# Sidebar, AppLayout
+│   │       │   ├── LanguageSwitcher.tsx
+│   │       │   └── AccessibilityControls.tsx
+│   │       ├── i18n/      # en, es, fr, ar, hi translations
+│   │       └── stores/    # Zustand state
+│   ├── customer-app/      # Customer React app (port 3000)
+│   └── driver-app/        # Driver mobile-first React app (port 3001)
+└── backend/               # Express API (port 5000)
+    ├── src/
+    │   ├── modules/       # 20+ feature modules
+    │   └── jobs/          # proactive.ts — hourly cron + 6AM daily brief
+    └── prisma/            # schema + migrations + seed
+```
