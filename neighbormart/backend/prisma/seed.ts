@@ -108,178 +108,86 @@ async function main() {
 
   // ── 1. Store ────────────────────────────────────────────────────────────────
 
-  console.log('Creating store...');
-  const store = await prisma.store.create({
-    data: {
-      id: DEMO_STORE_ID,
-      name: 'NeighborMart Demo Store',
-      address: '123 Main Street',
-      city: 'Springfield',
-      country: 'US',
-      currency: 'USD',
-      timezone: 'America/New_York',
-      lowStockThreshold: 10,
-      salesGoal: 5000,
-      status: 'ACTIVE',
-    },
-  });
-  console.log(`  Store created: "${store.name}" (id: ${store.id})\n`);
-
-  // ── 2. Password hash ────────────────────────────────────────────────────────
-
-  console.log('Hashing passwords...');
-  const passwordHash = await bcrypt.hash('password123', 10);
-  console.log('  Done.\n');
-
-  // ── 3. Owner user ───────────────────────────────────────────────────────────
-
-  console.log('Creating users...');
-  const ownerUser = await prisma.user.create({
-    data: {
-      storeId: store.id,
-      name: 'Alex Johnson',
-      email: 'owner@neighbormart.com',
-      password: passwordHash,
-      role: 'OWNER',
-      status: 'ACTIVE',
-    },
-  });
-  console.log(`  Owner created: ${ownerUser.name} <${ownerUser.email}>`);
-
-  // ── 4. Manager user + Manager record ────────────────────────────────────────
-
-  const managerUser = await prisma.user.create({
-    data: {
-      storeId: store.id,
-      name: 'Sarah Williams',
-      email: 'manager@neighbormart.com',
-      password: passwordHash,
-      role: 'MANAGER',
-      status: 'ACTIVE',
-    },
-  });
-
-  await prisma.manager.create({
-    data: {
-      userId: managerUser.id,
-      storeId: store.id,
-      assignedBy: ownerUser.id,
-      permissions: {
-        viewSales: true,
-        manageInventory: true,
-        manageProducts: true,
-        manageStaff: true,
-        viewReports: true,
-        processReturns: true,
-        viewCustomers: true,
-        manageSuppliers: true,
-      },
-      status: 'ACTIVE',
-    },
-  });
-  console.log(`  Manager created: ${managerUser.name} <${managerUser.email}>`);
-
-  // ── 5. Staff users + Staff records ──────────────────────────────────────────
-
-  const staffInputs = [
-    {
-      name: 'Michael Chen',
-      email: 'staff.cashier@neighbormart.com',
-      position: 'CASHIER' as const,
-      shiftType: 'MORNING' as const,
-      employeeId: 'NM-001',
-    },
-    {
-      name: 'Emma Davis',
-      email: 'staff.stock@neighbormart.com',
-      position: 'STOCK' as const,
-      shiftType: 'EVENING' as const,
-      employeeId: 'NM-002',
-    },
-    {
-      name: 'James Wilson',
-      email: 'staff.supervisor@neighbormart.com',
-      position: 'SUPERVISOR' as const,
-      shiftType: 'FULL_DAY' as const,
-      employeeId: 'NM-003',
-    },
-  ];
-
-  const staffRecords: { userId: string; staffId: string; position: string }[] = [];
-  for (const input of staffInputs) {
-    const staffUser = await prisma.user.create({
-      data: {
-        storeId: store.id,
-        name: input.name,
-        email: input.email,
-        password: passwordHash,
-        role: 'STAFF',
+  let store: Awaited<ReturnType<typeof prisma.store.upsert>>;
+  try {
+    console.log('Creating store...');
+    store = await prisma.store.upsert({
+      where: { id: DEMO_STORE_ID },
+      update: {},
+      create: {
+        id: DEMO_STORE_ID,
+        name: 'NeighborMart Demo Store',
+        address: '123 Main Street',
+        city: 'Springfield',
+        country: 'US',
+        currency: 'USD',
+        timezone: 'America/New_York',
+        lowStockThreshold: 10,
+        salesGoal: 5000,
         status: 'ACTIVE',
       },
     });
-    const staffRecord = await prisma.staff.create({
-      data: {
-        userId: staffUser.id,
-        storeId: store.id,
-        employeeId: input.employeeId,
-        position: input.position,
-        shiftType: input.shiftType,
-        status: 'ACTIVE',
-        createdBy: ownerUser.id,
-      },
-    });
-    staffRecords.push({ userId: staffUser.id, staffId: staffRecord.id, position: input.position });
-    console.log(`  Staff created: ${input.name} (${input.position}, ${input.employeeId})`);
+    console.log(`  Store created: "${store.name}" (id: ${store.id})\n`);
+  } catch (e) {
+    console.error('FATAL: Store seed failed:', e);
+    throw e;
   }
-  console.log();
 
-  // ── 6. 18 Categories ────────────────────────────────────────────────────────
+  // ── 2. 18 Categories ────────────────────────────────────────────────────────
 
-  console.log('Creating categories...');
-  const categoryDefs = [
-    { name: 'Dairy & Eggs',               icon: '🥛', sortOrder: 1  },
-    { name: 'Bakery & Bread',             icon: '🍞', sortOrder: 2  },
-    { name: 'Meat, Poultry & Seafood',    icon: '🥩', sortOrder: 3  },
-    { name: 'Fresh Vegetables',           icon: '🥦', sortOrder: 4  },
-    { name: 'Fresh Fruits',               icon: '🍎', sortOrder: 5  },
-    { name: 'Grains, Rice & Flour',       icon: '🌾', sortOrder: 6  },
-    { name: 'Cooking Essentials & Spices',icon: '🌶️', sortOrder: 7  },
-    { name: 'Packaged & Canned Foods',    icon: '🥫', sortOrder: 8  },
-    { name: 'Beverages',                  icon: '🥤', sortOrder: 9  },
-    { name: 'Snacks & Confectionery',     icon: '🍫', sortOrder: 10 },
-    { name: 'Personal Care & Hygiene',    icon: '🧴', sortOrder: 11 },
-    { name: 'Household & Cleaning',       icon: '🧹', sortOrder: 12 },
-    { name: 'Baby & Kids',               icon: '👶', sortOrder: 13 },
-    { name: 'Health & Wellness',          icon: '💊', sortOrder: 14 },
-    { name: 'Frozen Foods',               icon: '🧊', sortOrder: 15 },
-    { name: 'Ready-to-Eat & Deli',        icon: '🥪', sortOrder: 16 },
-    { name: 'Organic & Specialty',        icon: '🌿', sortOrder: 17 },
-    { name: 'Store & Packaging Supplies', icon: '📦', sortOrder: 18 },
-  ];
-
-  const cats: Record<string, string> = {}; // name → id
-  for (const def of categoryDefs) {
-    const c = await prisma.category.create({
-      data: { storeId: store.id, ...def },
-    });
-    cats[def.name] = c.id;
-    console.log(`  ${def.icon}  ${def.name}`);
+  let cats: Record<string, string> = {}; // name → id
+  try {
+    console.log('Creating categories...');
+    const categoryDefs = [
+      { name: 'Dairy & Eggs',               icon: '🥛', sortOrder: 1  },
+      { name: 'Bakery & Bread',             icon: '🍞', sortOrder: 2  },
+      { name: 'Meat, Poultry & Seafood',    icon: '🥩', sortOrder: 3  },
+      { name: 'Fresh Vegetables',           icon: '🥦', sortOrder: 4  },
+      { name: 'Fresh Fruits',               icon: '🍎', sortOrder: 5  },
+      { name: 'Grains, Rice & Flour',       icon: '🌾', sortOrder: 6  },
+      { name: 'Cooking Essentials & Spices',icon: '🌶️', sortOrder: 7  },
+      { name: 'Packaged & Canned Foods',    icon: '🥫', sortOrder: 8  },
+      { name: 'Beverages',                  icon: '🥤', sortOrder: 9  },
+      { name: 'Snacks & Confectionery',     icon: '🍫', sortOrder: 10 },
+      { name: 'Personal Care & Hygiene',    icon: '🧴', sortOrder: 11 },
+      { name: 'Household & Cleaning',       icon: '🧹', sortOrder: 12 },
+      { name: 'Baby & Kids',               icon: '👶', sortOrder: 13 },
+      { name: 'Health & Wellness',          icon: '💊', sortOrder: 14 },
+      { name: 'Frozen Foods',               icon: '🧊', sortOrder: 15 },
+      { name: 'Ready-to-Eat & Deli',        icon: '🥪', sortOrder: 16 },
+      { name: 'Organic & Specialty',        icon: '🌿', sortOrder: 17 },
+      { name: 'Store & Packaging Supplies', icon: '📦', sortOrder: 18 },
+    ];
+    for (const def of categoryDefs) {
+      const catId = def.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+      const c = await prisma.category.upsert({
+        where: { id: catId },
+        update: {},
+        create: { id: catId, storeId: store.id, ...def },
+      });
+      cats[def.name] = c.id;
+      console.log(`  ${def.icon}  ${def.name}`);
+    }
+    console.log();
+  } catch (e) {
+    console.error('FATAL: Categories seed failed:', e);
+    throw e;
   }
-  console.log();
 
-  // ── 7. 5 Brands ─────────────────────────────────────────────────────────────
+  // ── 3. 5 Brands ─────────────────────────────────────────────────────────────
 
   console.log('Creating brands...');
   const brandNames = ['FreshFarm', 'NatureBest', 'HomeChoice', 'DailyEssentials', 'PureGold'];
   const brands: Record<string, string> = {}; // name → id
   for (const name of brandNames) {
-    const b = await prisma.brand.create({ data: { storeId: store.id, name } });
+    const brandId = `brand-${name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const b = await prisma.brand.upsert({ where: { id: brandId }, update: {}, create: { id: brandId, storeId: store.id, name } });
     brands[name] = b.id;
     console.log(`  Brand: ${name}`);
   }
   console.log();
 
-  // ── 8. 3 Suppliers ──────────────────────────────────────────────────────────
+  // ── 4. 3 Suppliers ──────────────────────────────────────────────────────────
 
   console.log('Creating suppliers...');
   const supplierDefs = [
@@ -320,341 +228,469 @@ async function main() {
 
   const suppliers: string[] = []; // ids in order
   for (const def of supplierDefs) {
-    const s = await prisma.supplier.create({ data: { storeId: store.id, ...def } });
+    const supplierId = `supplier-${def.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+    const s = await prisma.supplier.upsert({ where: { id: supplierId }, update: {}, create: { id: supplierId, storeId: store.id, ...def } });
     suppliers.push(s.id);
     console.log(`  Supplier: ${def.name} (lead time: ${def.leadTimeDays} days, rating: ${def.rating})`);
   }
   console.log();
 
-  // ── 9. 20 Products ──────────────────────────────────────────────────────────
+  // ── 5. Password hash + Users (owner, manager, staff) ────────────────────────
 
-  console.log('Creating products...');
+  let ownerUser: Awaited<ReturnType<typeof prisma.user.upsert>>;
+  let managerUser: Awaited<ReturnType<typeof prisma.user.upsert>>;
+  const staffRecords: { userId: string; staffId: string; position: string }[] = [];
 
-  const baseProduct = {
-    storeId: store.id,
-    createdBy: ownerUser.id,
-    taxRate: 0,
-    packSize: 1,
-    isOrganic: false,
-    isVegan: false,
-    isGlutenFree: false,
-    isHalal: false,
-    isKosher: false,
-    isPerishable: false,
-    isRecyclable: false,
-    status: 'ACTIVE' as const,
-  };
+  try {
+    console.log('Hashing passwords...');
+    const passwordHash = await bcrypt.hash('password123', 10);
+    console.log('  Done.\n');
 
-  const productDefs = [
-    // 1. Dairy & Eggs
-    {
-      name: 'Whole Milk 1L',
-      sku: 'NM-DAIRY-001',
-      categoryId: cats['Dairy & Eggs'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 2.20,
-      sellingPrice: 3.49,
-      stockQty: 45,
-      lowStockThreshold: 15,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'litre',
-      description: 'Fresh whole milk, pasteurised and homogenised',
-    },
-    // 2. Bakery & Bread
-    {
-      name: 'Sourdough Bread 800g',
-      sku: 'NM-BAKE-001',
-      categoryId: cats['Bakery & Bread'],
-      brandId: brands['NatureBest'],
-      purchasePrice: 3.10,
-      sellingPrice: 4.99,
-      stockQty: 12,
-      lowStockThreshold: 8,
-      storageType: 'AMBIENT' as const,
-      isPerishable: true,
-      unitOfMeasure: 'loaf',
-      description: 'Artisan sourdough bread, slow-fermented',
-    },
-    // 3. Meat, Poultry & Seafood
-    {
-      name: 'Chicken Breast 500g',
-      sku: 'NM-MEAT-001',
-      categoryId: cats['Meat, Poultry & Seafood'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 5.80,
-      sellingPrice: 8.99,
-      stockQty: 28,
-      lowStockThreshold: 10,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'pack',
-      description: 'Fresh boneless skinless chicken breast',
-    },
-    // 4. Fresh Vegetables — LOW STOCK (8 < threshold 10)
-    {
-      name: 'Baby Spinach 200g',
-      sku: 'NM-VEG-001',
-      categoryId: cats['Fresh Vegetables'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 1.80,
-      sellingPrice: 3.29,
-      stockQty: 8,
-      lowStockThreshold: 10,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'bag',
-      description: 'Tender baby spinach leaves, pre-washed',
-    },
-    // 5. Fresh Fruits — Organic
-    {
-      name: 'Organic Apples 1kg',
-      sku: 'NM-FRUIT-001',
-      categoryId: cats['Fresh Fruits'],
-      brandId: brands['NatureBest'],
-      purchasePrice: 3.40,
-      sellingPrice: 5.49,
-      stockQty: 35,
-      lowStockThreshold: 12,
-      storageType: 'AMBIENT' as const,
-      isOrganic: true,
-      unitOfMeasure: 'kg',
-      description: 'Certified organic mixed apples',
-    },
-    // 6. Grains, Rice & Flour
-    {
-      name: 'Basmati Rice 2kg',
-      sku: 'NM-GRAIN-001',
-      categoryId: cats['Grains, Rice & Flour'],
-      brandId: brands['DailyEssentials'],
-      purchasePrice: 4.50,
-      sellingPrice: 6.99,
-      stockQty: 60,
-      lowStockThreshold: 20,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'bag',
-      description: 'Premium aged long-grain basmati rice',
-    },
-    // 7. Cooking Essentials & Spices
-    {
-      name: 'Olive Oil Extra Virgin 500ml',
-      sku: 'NM-COOK-001',
-      categoryId: cats['Cooking Essentials & Spices'],
-      brandId: brands['PureGold'],
-      purchasePrice: 8.20,
-      sellingPrice: 12.99,
-      stockQty: 22,
-      lowStockThreshold: 8,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'bottle',
-      description: 'Cold-pressed extra virgin olive oil',
-    },
-    // 8. Packaged & Canned Foods — OUT OF STOCK (0)
-    {
-      name: 'Tomato Soup 400g',
-      sku: 'NM-CAN-001',
-      categoryId: cats['Packaged & Canned Foods'],
-      brandId: brands['HomeChoice'],
-      purchasePrice: 1.10,
-      sellingPrice: 1.99,
-      stockQty: 0,
-      lowStockThreshold: 15,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'can',
-      description: 'Classic cream of tomato soup',
-    },
-    // 9. Beverages
-    {
-      name: 'Orange Juice 1L',
-      sku: 'NM-BEV-001',
-      categoryId: cats['Beverages'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 2.40,
-      sellingPrice: 3.79,
-      stockQty: 31,
-      lowStockThreshold: 12,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'bottle',
-      description: 'Freshly squeezed orange juice, not from concentrate',
-    },
-    // 10. Snacks & Confectionery
-    {
-      name: 'Dark Chocolate 100g',
-      sku: 'NM-SNACK-001',
-      categoryId: cats['Snacks & Confectionery'],
-      brandId: brands['NatureBest'],
-      purchasePrice: 1.60,
-      sellingPrice: 2.49,
-      stockQty: 55,
-      lowStockThreshold: 20,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'bar',
-      description: '70% dark chocolate, single origin',
-    },
-    // 11. Personal Care & Hygiene
-    {
-      name: 'Shampoo 400ml',
-      sku: 'NM-CARE-001',
-      categoryId: cats['Personal Care & Hygiene'],
-      brandId: brands['DailyEssentials'],
-      purchasePrice: 4.30,
-      sellingPrice: 6.99,
-      stockQty: 18,
-      lowStockThreshold: 8,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'bottle',
-      description: 'Daily moisturising shampoo for all hair types',
-    },
-    // 12. Household & Cleaning
-    {
-      name: 'Dish Soap 500ml',
-      sku: 'NM-CLEAN-001',
-      categoryId: cats['Household & Cleaning'],
-      brandId: brands['HomeChoice'],
-      purchasePrice: 1.80,
-      sellingPrice: 2.99,
-      stockQty: 42,
-      lowStockThreshold: 15,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'bottle',
-      description: 'Concentrated dish washing liquid, lemon scent',
-    },
-    // 13. Baby & Kids
-    {
-      name: 'Baby Diapers Size 3',
-      sku: 'NM-BABY-001',
-      categoryId: cats['Baby & Kids'],
-      brandId: brands['PureGold'],
-      purchasePrice: 10.00,
-      sellingPrice: 14.99,
-      stockQty: 15,
-      lowStockThreshold: 8,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'pack',
-      description: 'Ultra-soft diapers for 6–10 kg babies, 52 per pack',
-    },
-    // 14. Health & Wellness — LOW STOCK (7 < threshold 10)
-    {
-      name: 'Vitamin C 1000mg 60 tabs',
-      sku: 'NM-HLTH-001',
-      categoryId: cats['Health & Wellness'],
-      brandId: brands['PureGold'],
-      purchasePrice: 5.20,
-      sellingPrice: 8.49,
-      stockQty: 7,
-      lowStockThreshold: 10,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'box',
-      description: 'High-strength Vitamin C tablets with zinc, 60-count',
-    },
-    // 15. Frozen Foods
-    {
-      name: 'Frozen Peas 500g',
-      sku: 'NM-FRZN-001',
-      categoryId: cats['Frozen Foods'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 1.40,
-      sellingPrice: 2.29,
-      stockQty: 38,
-      lowStockThreshold: 15,
-      storageType: 'FROZEN' as const,
-      isPerishable: true,
-      unitOfMeasure: 'bag',
-      description: 'Garden peas, flash frozen within hours of harvest',
-    },
-    // 16. Dairy & Eggs
-    {
-      name: 'Greek Yogurt 500g',
-      sku: 'NM-DAIRY-002',
-      categoryId: cats['Dairy & Eggs'],
-      brandId: brands['NatureBest'],
-      purchasePrice: 2.80,
-      sellingPrice: 4.49,
-      stockQty: 24,
-      lowStockThreshold: 10,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'tub',
-      description: 'Thick strained Greek-style yogurt, full fat',
-    },
-    // 17. Dairy & Eggs — LOW STOCK (9 < threshold 10)
-    {
-      name: 'Cheddar Cheese 200g',
-      sku: 'NM-DAIRY-003',
-      categoryId: cats['Dairy & Eggs'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 3.80,
-      sellingPrice: 5.99,
-      stockQty: 9,
-      lowStockThreshold: 10,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'block',
-      description: 'Mature cheddar cheese, 12 months aged',
-    },
-    // 18. Grains, Rice & Flour
-    {
-      name: 'Pasta Penne 500g',
-      sku: 'NM-GRAIN-002',
-      categoryId: cats['Grains, Rice & Flour'],
-      brandId: brands['DailyEssentials'],
-      purchasePrice: 1.20,
-      sellingPrice: 1.99,
-      stockQty: 67,
-      lowStockThreshold: 25,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'pack',
-      description: 'Durum wheat semolina penne rigate',
-    },
-    // 19. Household & Cleaning
-    {
-      name: 'Washing Powder 2kg',
-      sku: 'NM-CLEAN-002',
-      categoryId: cats['Household & Cleaning'],
-      brandId: brands['HomeChoice'],
-      purchasePrice: 6.50,
-      sellingPrice: 9.99,
-      stockQty: 33,
-      lowStockThreshold: 12,
-      storageType: 'AMBIENT' as const,
-      unitOfMeasure: 'box',
-      description: 'Bio washing powder, effective at 30°C',
-    },
-    // 20. Dairy & Eggs
-    {
-      name: 'Eggs Free Range x12',
-      sku: 'NM-EGG-001',
-      categoryId: cats['Dairy & Eggs'],
-      brandId: brands['FreshFarm'],
-      purchasePrice: 3.20,
-      sellingPrice: 4.99,
-      stockQty: 20,
-      lowStockThreshold: 8,
-      storageType: 'REFRIGERATED' as const,
-      isPerishable: true,
-      unitOfMeasure: 'dozen',
-      description: 'Large free-range eggs, class A, pack of 12',
-    },
-  ];
-
-  const products: Record<string, string> = {}; // sku → id
-  for (const def of productDefs) {
-    const p = await prisma.product.create({
-      data: { ...baseProduct, ...def },
+    console.log('Creating users...');
+    ownerUser = await prisma.user.upsert({
+      where: { email: 'owner@neighbormart.com' },
+      update: {},
+      create: {
+        storeId: store.id,
+        name: 'Alex Johnson',
+        email: 'owner@neighbormart.com',
+        password: passwordHash,
+        role: 'OWNER',
+        status: 'ACTIVE',
+      },
     });
-    products[def.sku] = p.id;
-    const stockNote =
-      def.stockQty === 0
-        ? ' [OUT OF STOCK]'
-        : def.stockQty <= def.lowStockThreshold
-        ? ` [LOW STOCK: ${def.stockQty}]`
-        : '';
-    console.log(`  ${def.name} — qty: ${def.stockQty}, price: $${def.sellingPrice}${stockNote}`);
-  }
-  console.log();
+    console.log(`  Owner created: ${ownerUser.name} <${ownerUser.email}>`);
 
-  // ── 10. Product Batches with expiry dates ────────────────────────────────────
+    managerUser = await prisma.user.upsert({
+      where: { email: 'manager@neighbormart.com' },
+      update: {},
+      create: {
+        storeId: store.id,
+        name: 'Sarah Williams',
+        email: 'manager@neighbormart.com',
+        password: passwordHash,
+        role: 'MANAGER',
+        status: 'ACTIVE',
+      },
+    });
+
+    await prisma.manager.upsert({
+      where: { userId: managerUser.id },
+      update: {},
+      create: {
+        userId: managerUser.id,
+        storeId: store.id,
+        assignedBy: ownerUser.id,
+        permissions: {
+          viewSales: true,
+          manageInventory: true,
+          manageProducts: true,
+          manageStaff: true,
+          viewReports: true,
+          processReturns: true,
+          viewCustomers: true,
+          manageSuppliers: true,
+        },
+        status: 'ACTIVE',
+      },
+    });
+    console.log(`  Manager created: ${managerUser.name} <${managerUser.email}>`);
+
+    const staffInputs = [
+      {
+        name: 'Michael Chen',
+        email: 'staff.cashier@neighbormart.com',
+        position: 'CASHIER' as const,
+        shiftType: 'MORNING' as const,
+        employeeId: 'NM-001',
+      },
+      {
+        name: 'Emma Davis',
+        email: 'staff.stock@neighbormart.com',
+        position: 'STOCK' as const,
+        shiftType: 'EVENING' as const,
+        employeeId: 'NM-002',
+      },
+      {
+        name: 'James Wilson',
+        email: 'staff.supervisor@neighbormart.com',
+        position: 'SUPERVISOR' as const,
+        shiftType: 'FULL_DAY' as const,
+        employeeId: 'NM-003',
+      },
+    ];
+
+    for (const input of staffInputs) {
+      const staffUser = await prisma.user.upsert({
+        where: { email: input.email },
+        update: {},
+        create: {
+          storeId: store.id,
+          name: input.name,
+          email: input.email,
+          password: passwordHash,
+          role: 'STAFF',
+          status: 'ACTIVE',
+        },
+      });
+      const staffRecord = await prisma.staff.upsert({
+        where: { userId: staffUser.id },
+        update: {},
+        create: {
+          userId: staffUser.id,
+          storeId: store.id,
+          employeeId: input.employeeId,
+          position: input.position,
+          shiftType: input.shiftType,
+          status: 'ACTIVE',
+          createdBy: ownerUser.id,
+        },
+      });
+      staffRecords.push({ userId: staffUser.id, staffId: staffRecord.id, position: input.position });
+      console.log(`  Staff created: ${input.name} (${input.position}, ${input.employeeId})`);
+    }
+    console.log();
+  } catch (e) {
+    console.error('FATAL: Users seed failed:', e);
+    throw e;
+  }
+
+  // ── 6. 20 Products ──────────────────────────────────────────────────────────
+
+  let products: Record<string, string> = {}; // sku → id
+  try {
+    console.log('Creating products...');
+
+    const baseProduct = {
+      storeId: store.id,
+      createdBy: ownerUser.id,
+      taxRate: 0,
+      packSize: 1,
+      isOrganic: false,
+      isVegan: false,
+      isGlutenFree: false,
+      isHalal: false,
+      isKosher: false,
+      isPerishable: false,
+      isRecyclable: false,
+      status: 'ACTIVE' as const,
+    };
+
+    const productDefs = [
+      // 1. Dairy & Eggs
+      {
+        name: 'Whole Milk 1L',
+        sku: 'NM-DAIRY-001',
+        categoryId: cats['Dairy & Eggs'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 2.20,
+        sellingPrice: 3.49,
+        stockQty: 45,
+        lowStockThreshold: 15,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'litre',
+        description: 'Fresh whole milk, pasteurised and homogenised',
+      },
+      // 2. Bakery & Bread
+      {
+        name: 'Sourdough Bread 800g',
+        sku: 'NM-BAKE-001',
+        categoryId: cats['Bakery & Bread'],
+        brandId: brands['NatureBest'],
+        purchasePrice: 3.10,
+        sellingPrice: 4.99,
+        stockQty: 12,
+        lowStockThreshold: 8,
+        storageType: 'AMBIENT' as const,
+        isPerishable: true,
+        unitOfMeasure: 'loaf',
+        description: 'Artisan sourdough bread, slow-fermented',
+      },
+      // 3. Meat, Poultry & Seafood
+      {
+        name: 'Chicken Breast 500g',
+        sku: 'NM-MEAT-001',
+        categoryId: cats['Meat, Poultry & Seafood'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 5.80,
+        sellingPrice: 8.99,
+        stockQty: 28,
+        lowStockThreshold: 10,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'pack',
+        description: 'Fresh boneless skinless chicken breast',
+      },
+      // 4. Fresh Vegetables — LOW STOCK (8 < threshold 10)
+      {
+        name: 'Baby Spinach 200g',
+        sku: 'NM-VEG-001',
+        categoryId: cats['Fresh Vegetables'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 1.80,
+        sellingPrice: 3.29,
+        stockQty: 8,
+        lowStockThreshold: 10,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'bag',
+        description: 'Tender baby spinach leaves, pre-washed',
+      },
+      // 5. Fresh Fruits — Organic
+      {
+        name: 'Organic Apples 1kg',
+        sku: 'NM-FRUIT-001',
+        categoryId: cats['Fresh Fruits'],
+        brandId: brands['NatureBest'],
+        purchasePrice: 3.40,
+        sellingPrice: 5.49,
+        stockQty: 35,
+        lowStockThreshold: 12,
+        storageType: 'AMBIENT' as const,
+        isOrganic: true,
+        unitOfMeasure: 'kg',
+        description: 'Certified organic mixed apples',
+      },
+      // 6. Grains, Rice & Flour
+      {
+        name: 'Basmati Rice 2kg',
+        sku: 'NM-GRAIN-001',
+        categoryId: cats['Grains, Rice & Flour'],
+        brandId: brands['DailyEssentials'],
+        purchasePrice: 4.50,
+        sellingPrice: 6.99,
+        stockQty: 60,
+        lowStockThreshold: 20,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'bag',
+        description: 'Premium aged long-grain basmati rice',
+      },
+      // 7. Cooking Essentials & Spices
+      {
+        name: 'Olive Oil Extra Virgin 500ml',
+        sku: 'NM-COOK-001',
+        categoryId: cats['Cooking Essentials & Spices'],
+        brandId: brands['PureGold'],
+        purchasePrice: 8.20,
+        sellingPrice: 12.99,
+        stockQty: 22,
+        lowStockThreshold: 8,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'bottle',
+        description: 'Cold-pressed extra virgin olive oil',
+      },
+      // 8. Packaged & Canned Foods — OUT OF STOCK (0)
+      {
+        name: 'Tomato Soup 400g',
+        sku: 'NM-CAN-001',
+        categoryId: cats['Packaged & Canned Foods'],
+        brandId: brands['HomeChoice'],
+        purchasePrice: 1.10,
+        sellingPrice: 1.99,
+        stockQty: 0,
+        lowStockThreshold: 15,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'can',
+        description: 'Classic cream of tomato soup',
+      },
+      // 9. Beverages
+      {
+        name: 'Orange Juice 1L',
+        sku: 'NM-BEV-001',
+        categoryId: cats['Beverages'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 2.40,
+        sellingPrice: 3.79,
+        stockQty: 31,
+        lowStockThreshold: 12,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'bottle',
+        description: 'Freshly squeezed orange juice, not from concentrate',
+      },
+      // 10. Snacks & Confectionery
+      {
+        name: 'Dark Chocolate 100g',
+        sku: 'NM-SNACK-001',
+        categoryId: cats['Snacks & Confectionery'],
+        brandId: brands['NatureBest'],
+        purchasePrice: 1.60,
+        sellingPrice: 2.49,
+        stockQty: 55,
+        lowStockThreshold: 20,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'bar',
+        description: '70% dark chocolate, single origin',
+      },
+      // 11. Personal Care & Hygiene
+      {
+        name: 'Shampoo 400ml',
+        sku: 'NM-CARE-001',
+        categoryId: cats['Personal Care & Hygiene'],
+        brandId: brands['DailyEssentials'],
+        purchasePrice: 4.30,
+        sellingPrice: 6.99,
+        stockQty: 18,
+        lowStockThreshold: 8,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'bottle',
+        description: 'Daily moisturising shampoo for all hair types',
+      },
+      // 12. Household & Cleaning
+      {
+        name: 'Dish Soap 500ml',
+        sku: 'NM-CLEAN-001',
+        categoryId: cats['Household & Cleaning'],
+        brandId: brands['HomeChoice'],
+        purchasePrice: 1.80,
+        sellingPrice: 2.99,
+        stockQty: 42,
+        lowStockThreshold: 15,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'bottle',
+        description: 'Concentrated dish washing liquid, lemon scent',
+      },
+      // 13. Baby & Kids
+      {
+        name: 'Baby Diapers Size 3',
+        sku: 'NM-BABY-001',
+        categoryId: cats['Baby & Kids'],
+        brandId: brands['PureGold'],
+        purchasePrice: 10.00,
+        sellingPrice: 14.99,
+        stockQty: 15,
+        lowStockThreshold: 8,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'pack',
+        description: 'Ultra-soft diapers for 6–10 kg babies, 52 per pack',
+      },
+      // 14. Health & Wellness — LOW STOCK (7 < threshold 10)
+      {
+        name: 'Vitamin C 1000mg 60 tabs',
+        sku: 'NM-HLTH-001',
+        categoryId: cats['Health & Wellness'],
+        brandId: brands['PureGold'],
+        purchasePrice: 5.20,
+        sellingPrice: 8.49,
+        stockQty: 7,
+        lowStockThreshold: 10,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'box',
+        description: 'High-strength Vitamin C tablets with zinc, 60-count',
+      },
+      // 15. Frozen Foods
+      {
+        name: 'Frozen Peas 500g',
+        sku: 'NM-FRZN-001',
+        categoryId: cats['Frozen Foods'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 1.40,
+        sellingPrice: 2.29,
+        stockQty: 38,
+        lowStockThreshold: 15,
+        storageType: 'FROZEN' as const,
+        isPerishable: true,
+        unitOfMeasure: 'bag',
+        description: 'Garden peas, flash frozen within hours of harvest',
+      },
+      // 16. Dairy & Eggs
+      {
+        name: 'Greek Yogurt 500g',
+        sku: 'NM-DAIRY-002',
+        categoryId: cats['Dairy & Eggs'],
+        brandId: brands['NatureBest'],
+        purchasePrice: 2.80,
+        sellingPrice: 4.49,
+        stockQty: 24,
+        lowStockThreshold: 10,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'tub',
+        description: 'Thick strained Greek-style yogurt, full fat',
+      },
+      // 17. Dairy & Eggs — LOW STOCK (9 < threshold 10)
+      {
+        name: 'Cheddar Cheese 200g',
+        sku: 'NM-DAIRY-003',
+        categoryId: cats['Dairy & Eggs'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 3.80,
+        sellingPrice: 5.99,
+        stockQty: 9,
+        lowStockThreshold: 10,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'block',
+        description: 'Mature cheddar cheese, 12 months aged',
+      },
+      // 18. Grains, Rice & Flour
+      {
+        name: 'Pasta Penne 500g',
+        sku: 'NM-GRAIN-002',
+        categoryId: cats['Grains, Rice & Flour'],
+        brandId: brands['DailyEssentials'],
+        purchasePrice: 1.20,
+        sellingPrice: 1.99,
+        stockQty: 67,
+        lowStockThreshold: 25,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'pack',
+        description: 'Durum wheat semolina penne rigate',
+      },
+      // 19. Household & Cleaning
+      {
+        name: 'Washing Powder 2kg',
+        sku: 'NM-CLEAN-002',
+        categoryId: cats['Household & Cleaning'],
+        brandId: brands['HomeChoice'],
+        purchasePrice: 6.50,
+        sellingPrice: 9.99,
+        stockQty: 33,
+        lowStockThreshold: 12,
+        storageType: 'AMBIENT' as const,
+        unitOfMeasure: 'box',
+        description: 'Bio washing powder, effective at 30°C',
+      },
+      // 20. Dairy & Eggs
+      {
+        name: 'Eggs Free Range x12',
+        sku: 'NM-EGG-001',
+        categoryId: cats['Dairy & Eggs'],
+        brandId: brands['FreshFarm'],
+        purchasePrice: 3.20,
+        sellingPrice: 4.99,
+        stockQty: 20,
+        lowStockThreshold: 8,
+        storageType: 'REFRIGERATED' as const,
+        isPerishable: true,
+        unitOfMeasure: 'dozen',
+        description: 'Large free-range eggs, class A, pack of 12',
+      },
+    ];
+
+    for (const def of productDefs) {
+      const p = await prisma.product.upsert({
+        where: { sku: def.sku },
+        update: {},
+        create: { ...baseProduct, ...def },
+      });
+      products[def.sku] = p.id;
+      const stockNote =
+        def.stockQty === 0
+          ? ' [OUT OF STOCK]'
+          : def.stockQty <= def.lowStockThreshold
+          ? ` [LOW STOCK: ${def.stockQty}]`
+          : '';
+      console.log(`  ${def.name} — qty: ${def.stockQty}, price: $${def.sellingPrice}${stockNote}`);
+    }
+    console.log();
+  } catch (e) {
+    console.error('FATAL: Products seed failed:', e);
+    throw e;
+  }
+
+  // ── 7. Product Batches with expiry dates ────────────────────────────────────
 
   console.log('Creating product batches (some expiring within 7 days)...');
 
@@ -724,19 +760,22 @@ async function main() {
   ];
 
   for (const b of batchDefs) {
-    await prisma.productBatch.create({ data: b });
+    await prisma.productBatch.upsert({ where: { id: b.batchNumber }, update: {}, create: { id: b.batchNumber, ...b } });
     const daysLeft = Math.ceil((b.expiryDate.getTime() - now.getTime()) / 86400000);
     const flag = daysLeft <= 7 ? ` *** EXPIRING IN ${daysLeft} DAYS ***` : '';
     console.log(`  ${b.batchNumber} (qty: ${b.quantity}, expires: ${b.expiryDate.toISOString().split('T')[0]})${flag}`);
   }
   console.log();
 
-  // ── 11. Purchase Order (RECEIVED) ────────────────────────────────────────────
+  // ── 8. Purchase Order (RECEIVED) ─────────────────────────────────────────────
 
   console.log('Creating purchase order...');
 
-  await prisma.purchaseOrder.create({
-    data: {
+  await prisma.purchaseOrder.upsert({
+    where: { id: `po-${DEMO_STORE_ID}-001` },
+    update: {},
+    create: {
+      id: `po-${DEMO_STORE_ID}-001`,
       storeId: store.id,
       supplierId: suppliers[0], // FreshDirect Wholesale
       status: 'RECEIVED',
@@ -769,61 +808,84 @@ async function main() {
   });
   console.log('  Purchase order created: FreshDirect Wholesale — RECEIVED (3 line items)\n');
 
-  // ── 12. Shifts for the current week ─────────────────────────────────────────
+  // ── 9. Promotions ────────────────────────────────────────────────────────────
 
-  console.log('Creating shifts for the current week...');
-
-  const monday = getWeekMonday();
-
-  const shiftSchedule = [
-    // Michael Chen — CASHIER — Morning Mon–Fri
-    {
-      staffId: staffRecords[0].staffId,
-      shiftType: 'MORNING' as const,
-      startTime: '06:00',
-      endTime: '14:00',
-      days: [0, 1, 2, 3, 4], // Mon–Fri (offset from Monday)
-    },
-    // Emma Davis — STOCK — Evening Mon, Tue, Wed, Fri, Sat
-    {
-      staffId: staffRecords[1].staffId,
-      shiftType: 'EVENING' as const,
-      startTime: '14:00',
-      endTime: '22:00',
-      days: [0, 1, 2, 4, 5], // Mon, Tue, Wed, Fri, Sat
-    },
-    // James Wilson — SUPERVISOR — Full Day Mon, Wed, Fri
-    {
-      staffId: staffRecords[2].staffId,
-      shiftType: 'FULL_DAY' as const,
-      startTime: '06:00',
-      endTime: '22:00',
-      days: [0, 2, 4], // Mon, Wed, Fri
-    },
-  ];
-
-  let shiftCount = 0;
-  for (const schedule of shiftSchedule) {
-    for (const dayOffset of schedule.days) {
-      const shiftDate = addDays(monday, dayOffset);
-      await prisma.shift.create({
-        data: {
-          storeId: store.id,
-          staffId: schedule.staffId,
-          date: shiftDate,
-          shiftType: schedule.shiftType,
-          startTime: schedule.startTime,
-          endTime: schedule.endTime,
-          status: 'SCHEDULED',
-          createdBy: ownerUser.id,
-        },
-      });
-      shiftCount++;
-    }
+  try {
+    await prisma.promotion.createMany({
+      data: [
+        { storeId: store.id, name: 'Weekend Sale 20% Off', type: 'PERCENTAGE', discountValue: 20, minOrderAmount: 15, appliesTo: 'ALL', startDate: addDays(now, -2), endDate: addDays(now, 5), status: 'ACTIVE', usedCount: 8 },
+        { storeId: store.id, name: '$5 Off Orders Over $30', type: 'FIXED', discountValue: 5, minOrderAmount: 30, appliesTo: 'ALL', startDate: addDays(now, -7), endDate: addDays(now, 14), status: 'ACTIVE', usedCount: 3 },
+        { storeId: store.id, name: 'Next Week Flash Sale', type: 'PERCENTAGE', discountValue: 15, minOrderAmount: 0, appliesTo: 'ALL', startDate: addDays(now, 3), endDate: addDays(now, 10), status: 'SCHEDULED', usedCount: 0 },
+      ],
+    });
+    console.log('  Created promotions\n');
+  } catch (e) {
+    console.warn('WARNING: Promotions seed failed (continuing):', e);
   }
-  console.log(`  ${shiftCount} shifts created across 3 staff members for this week.\n`);
 
-  // ── 13. Audit Log entries ────────────────────────────────────────────────────
+  // ── 10. Shifts for the current week ──────────────────────────────────────────
+
+  try {
+    console.log('Creating shifts for the current week...');
+
+    const monday = getWeekMonday();
+
+    const shiftSchedule = [
+      // Michael Chen — CASHIER — Morning Mon–Fri
+      {
+        staffId: staffRecords[0].staffId,
+        shiftType: 'MORNING' as const,
+        startTime: '06:00',
+        endTime: '14:00',
+        days: [0, 1, 2, 3, 4], // Mon–Fri (offset from Monday)
+      },
+      // Emma Davis — STOCK — Evening Mon, Tue, Wed, Fri, Sat
+      {
+        staffId: staffRecords[1].staffId,
+        shiftType: 'EVENING' as const,
+        startTime: '14:00',
+        endTime: '22:00',
+        days: [0, 1, 2, 4, 5], // Mon, Tue, Wed, Fri, Sat
+      },
+      // James Wilson — SUPERVISOR — Full Day Mon, Wed, Fri
+      {
+        staffId: staffRecords[2].staffId,
+        shiftType: 'FULL_DAY' as const,
+        startTime: '06:00',
+        endTime: '22:00',
+        days: [0, 2, 4], // Mon, Wed, Fri
+      },
+    ];
+
+    let shiftCount = 0;
+    for (const schedule of shiftSchedule) {
+      for (const dayOffset of schedule.days) {
+        const shiftDate = addDays(monday, dayOffset);
+        const shiftId = `shift-${schedule.staffId}-${shiftDate.toISOString().split('T')[0]}`;
+        await prisma.shift.upsert({
+          where: { id: shiftId },
+          update: {},
+          create: {
+            id: shiftId,
+            storeId: store.id,
+            staffId: schedule.staffId,
+            date: shiftDate,
+            shiftType: schedule.shiftType,
+            startTime: schedule.startTime,
+            endTime: schedule.endTime,
+            status: 'SCHEDULED',
+            createdBy: ownerUser.id,
+          },
+        });
+        shiftCount++;
+      }
+    }
+    console.log(`  ${shiftCount} shifts created across 3 staff members for this week.\n`);
+  } catch (e) {
+    console.warn('WARNING: Shifts seed failed (continuing):', e);
+  }
+
+  // ── 11. Audit Log entries ────────────────────────────────────────────────────
 
   console.log('Creating audit log entries...');
 
@@ -837,8 +899,11 @@ async function main() {
   ];
 
   for (const entry of auditDefs) {
-    await prisma.auditLog.create({
-      data: { storeId: store.id, ipAddress: '127.0.0.1', ...entry },
+    const auditId = `audit-${entry.userId}-${entry.module}-${entry.action}`;
+    await prisma.auditLog.upsert({
+      where: { id: auditId },
+      update: {},
+      create: { id: auditId, storeId: store.id, ipAddress: '127.0.0.1', ...entry },
     });
   }
   console.log(`  ${auditDefs.length} audit log entries created.\n`);
@@ -874,11 +939,15 @@ async function main() {
 
   const customerRecords: { userId: string; customerId: string; name: string }[] = [];
   for (const c of customerInputs) {
-    const u = await prisma.user.create({
-      data: { storeId: store.id, name: c.name, email: c.email, phone: c.phone, password: passwordHash, role: 'CUSTOMER' },
+    const u = await prisma.user.upsert({
+      where: { email: c.email },
+      update: {},
+      create: { storeId: store.id, name: c.name, email: c.email, phone: c.phone, password: await bcrypt.hash('password123', 10), role: 'CUSTOMER' },
     });
-    const cust = await prisma.customer.create({
-      data: { userId: u.id, storeId: store.id, loyaltyPoints: c.loyaltyPoints, tier: c.tier, totalSpend: c.totalSpend, totalOrders: c.totalOrders },
+    const cust = await prisma.customer.upsert({
+      where: { userId: u.id },
+      update: {},
+      create: { userId: u.id, storeId: store.id, loyaltyPoints: c.loyaltyPoints, tier: c.tier, totalSpend: c.totalSpend, totalOrders: c.totalOrders },
     });
     customerRecords.push({ userId: u.id, customerId: cust.id, name: c.name });
   }
@@ -888,59 +957,53 @@ async function main() {
   const productList = await prisma.product.findMany({ where: { storeId: store.id, stockQty: { gt: 0 } }, select: { id: true, name: true, sellingPrice: true }, take: 8 });
 
   // Sample orders (last 30 days)
-  const staffUser = await prisma.user.findFirst({ where: { storeId: store.id, role: 'STAFF' } });
-  const cashierId = staffUser?.id;
+  try {
+    const staffUser = await prisma.user.findFirst({ where: { storeId: store.id, role: 'STAFF' } });
+    const cashierId = staffUser?.id;
 
-  const orderDates = [-1, -2, -3, -5, -7, -9, -11, -14, -16, -18, -20, -22, -25, -27, -29].map(d => addDays(now, d));
-  let orderCount = 0;
-  for (let i = 0; i < orderDates.length; i++) {
-    const custRecord = customerRecords[i % customerRecords.length];
-    const item1 = productList[i % productList.length];
-    const item2 = productList[(i + 1) % productList.length];
-    const qty1 = (i % 3) + 1;
-    const qty2 = (i % 2) + 1;
-    const subtotal = item1.sellingPrice * qty1 + item2.sellingPrice * qty2;
-    const taxAmount = subtotal * 0.08;
-    const total = subtotal + taxAmount;
-    const cashTendered = Math.ceil(total / 5) * 5;
+    const orderDates = [-1, -2, -3, -5, -7, -9, -11, -14, -16, -18, -20, -22, -25, -27, -29].map(d => addDays(now, d));
+    let orderCount = 0;
+    for (let i = 0; i < orderDates.length; i++) {
+      const custRecord = customerRecords[i % customerRecords.length];
+      const item1 = productList[i % productList.length];
+      const item2 = productList[(i + 1) % productList.length];
+      const qty1 = (i % 3) + 1;
+      const qty2 = (i % 2) + 1;
+      const subtotal = item1.sellingPrice * qty1 + item2.sellingPrice * qty2;
+      const taxAmount = subtotal * 0.08;
+      const total = subtotal + taxAmount;
+      const cashTendered = Math.ceil(total / 5) * 5;
 
-    await prisma.order.create({
-      data: {
-        storeId: store.id,
-        customerId: custRecord.customerId,
-        cashierId,
-        type: i % 3 === 0 ? 'DELIVERY' : 'IN_STORE',
-        status: i < 3 ? 'PENDING' : 'DELIVERED',
-        subtotal,
-        taxAmount,
-        total,
-        paymentMethod: 'CASH',
-        cashTendered,
-        changeGiven: cashTendered - total,
-        createdAt: orderDates[i],
-        updatedAt: orderDates[i],
-        items: {
-          create: [
-            { productId: item1.id, productName: item1.name, quantity: qty1, unitPrice: item1.sellingPrice, subtotal: item1.sellingPrice * qty1 },
-            { productId: item2.id, productName: item2.name, quantity: qty2, unitPrice: item2.sellingPrice, subtotal: item2.sellingPrice * qty2 },
-          ],
+      await prisma.order.create({
+        data: {
+          storeId: store.id,
+          customerId: custRecord.customerId,
+          cashierId,
+          type: i % 3 === 0 ? 'DELIVERY' : 'IN_STORE',
+          status: i < 3 ? 'PENDING' : 'DELIVERED',
+          subtotal,
+          taxAmount,
+          total,
+          paymentMethod: 'CASH',
+          cashTendered,
+          changeGiven: cashTendered - total,
+          createdAt: orderDates[i],
+          updatedAt: orderDates[i],
+          items: {
+            create: [
+              { productId: item1.id, productName: item1.name, quantity: qty1, unitPrice: item1.sellingPrice, subtotal: item1.sellingPrice * qty1 },
+              { productId: item2.id, productName: item2.name, quantity: qty2, unitPrice: item2.sellingPrice, subtotal: item2.sellingPrice * qty2 },
+            ],
+          },
+          tracking: { create: { status: i < 3 ? 'PENDING' : 'DELIVERED', note: i < 3 ? 'Order received' : 'Delivered to customer', timestamp: orderDates[i] } },
         },
-        tracking: { create: { status: i < 3 ? 'PENDING' : 'DELIVERED', note: i < 3 ? 'Order received' : 'Delivered to customer', timestamp: orderDates[i] } },
-      },
-    });
-    orderCount++;
+      });
+      orderCount++;
+    }
+    console.log(`  Created ${orderCount} orders`);
+  } catch (e) {
+    console.warn('WARNING: Sample orders seed failed (continuing):', e);
   }
-  console.log(`  Created ${orderCount} orders`);
-
-  // Promotions
-  await prisma.promotion.createMany({
-    data: [
-      { storeId: store.id, name: 'Weekend Sale 20% Off', type: 'PERCENTAGE', discountValue: 20, minOrderAmount: 15, appliesTo: 'ALL', startDate: addDays(now, -2), endDate: addDays(now, 5), status: 'ACTIVE', usedCount: 8 },
-      { storeId: store.id, name: '$5 Off Orders Over $30', type: 'FIXED', discountValue: 5, minOrderAmount: 30, appliesTo: 'ALL', startDate: addDays(now, -7), endDate: addDays(now, 14), status: 'ACTIVE', usedCount: 3 },
-      { storeId: store.id, name: 'Next Week Flash Sale', type: 'PERCENTAGE', discountValue: 15, minOrderAmount: 0, appliesTo: 'ALL', startDate: addDays(now, 3), endDate: addDays(now, 10), status: 'SCHEDULED', usedCount: 0 },
-    ],
-  });
-  console.log('  Created promotions');
 
   // Coupons
   await prisma.coupon.createMany({
@@ -988,8 +1051,11 @@ async function main() {
   console.log('  Created loyalty transactions');
 
   // Complaints
-  await prisma.complaint.create({
-    data: {
+  await prisma.complaint.upsert({
+    where: { id: `complaint-quality-${DEMO_STORE_ID}` },
+    update: {},
+    create: {
+      id: `complaint-quality-${DEMO_STORE_ID}`,
       customerId: customerRecords[1].customerId,
       storeId: store.id,
       type: 'Product Quality',
@@ -997,8 +1063,11 @@ async function main() {
       status: 'OPEN',
     },
   });
-  await prisma.complaint.create({
-    data: {
+  await prisma.complaint.upsert({
+    where: { id: `complaint-delivery-${DEMO_STORE_ID}` },
+    update: {},
+    create: {
+      id: `complaint-delivery-${DEMO_STORE_ID}`,
       customerId: customerRecords[2].customerId,
       storeId: store.id,
       type: 'Delivery Issue',
