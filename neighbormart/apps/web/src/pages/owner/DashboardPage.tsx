@@ -499,7 +499,7 @@ export default function OwnerDashboardPage() {
                 ) : (
                   <div className="space-y-2">
                     {d.staffOnlineList.slice(0, 5).map((s) => (
-                      <div key={s.id} className="flex items-center gap-2.5">
+                      <div key={s.staffId} className="flex items-center gap-2.5">
                         {s.photo ? (
                           <img
                             src={s.photo}
@@ -699,12 +699,12 @@ export default function OwnerDashboardPage() {
                   <div className="space-y-2">
                     {criticalAlerts.map((p) => (
                       <div
-                        key={p.id}
+                        key={(p as any).productId ?? (p as any).id}
                         className="flex items-start gap-2 rounded-lg bg-red-50 p-2.5 dark:bg-red-900/15"
                       >
                         <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-red-500" />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-medium text-foreground">{p.name}</p>
+                          <p className="truncate text-xs font-medium text-foreground">{(p as any).productName ?? p.name}</p>
                           <p className="text-[10px] text-red-600 dark:text-red-400">
                             Out of stock — {formatNumber(p.stockQty)} units left
                           </p>
@@ -713,16 +713,18 @@ export default function OwnerDashboardPage() {
                     ))}
                     {warningAlerts.map((p) => (
                       <div
-                        key={(p as Product).id}
+                        key={(p as any).productId ?? (p as any).productName}
                         className="flex items-start gap-2 rounded-lg bg-yellow-50 p-2.5 dark:bg-yellow-900/15"
                       >
                         <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-yellow-500" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium text-foreground">
-                            {(p as Product).name}
+                            {(p as any).productName ?? (p as Product).name}
                           </p>
                           <p className="text-[10px] text-yellow-600 dark:text-yellow-400">
-                            Low stock — {formatNumber((p as Product).stockQty)} units left
+                            {(p as any).type === 'expiring_soon'
+                              ? `Expiring — ${(p as any).quantity} units`
+                              : `Low stock — ${formatNumber((p as any).stockQty ?? (p as Product).stockQty)} units left`}
                           </p>
                         </div>
                       </div>
