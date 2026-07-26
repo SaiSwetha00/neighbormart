@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axios from '@/services/api';
 import { Megaphone, Plus, Play, Pause, Trash2, BarChart2, Users, Zap, FlaskConical, TrendingUp, Gift } from 'lucide-react';
 
 type Campaign = {
@@ -36,43 +36,43 @@ export default function MarketingPage() {
 
   const { data: campaigns = [], isLoading } = useQuery<Campaign[]>({
     queryKey: ['campaigns'],
-    queryFn: () => axios.get('/api/campaigns').then(r => r.data.data),
+    queryFn: () => axios.get('/campaigns').then(r => r.data.data),
   });
 
   const { data: abTests = [] } = useQuery<ABTest[]>({
     queryKey: ['ab-tests'],
-    queryFn: () => axios.get('/api/ab-tests').then(r => r.data.data),
+    queryFn: () => axios.get('/ab-tests').then(r => r.data.data),
     enabled: tab === 'abtest',
   });
 
   const { data: referralStats } = useQuery({
     queryKey: ['referral-stats'],
-    queryFn: () => axios.get('/api/referrals/stats').then(r => r.data.data),
+    queryFn: () => axios.get('/referrals/stats').then(r => r.data.data),
     enabled: tab === 'referral',
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: typeof form) => axios.post('/api/campaigns', { ...data, discountPct: data.discountPct ? Number(data.discountPct) : null }),
+    mutationFn: (data: typeof form) => axios.post('/campaigns', { ...data, discountPct: data.discountPct ? Number(data.discountPct) : null }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['campaigns'] }); setShowCreate(false); setForm({ name: '', type: 'EMAIL', targetTier: 'ALL', subject: '', content: '', discountPct: '', startAt: '', endAt: '' }); },
   });
 
   const launchMutation = useMutation({
-    mutationFn: (id: string) => axios.post(`/api/campaigns/${id}/launch`),
+    mutationFn: (id: string) => axios.post(`/campaigns/${id}/launch`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['campaigns'] }),
   });
 
   const pauseMutation = useMutation({
-    mutationFn: (id: string) => axios.put(`/api/campaigns/${id}`, { status: 'PAUSED' }),
+    mutationFn: (id: string) => axios.put(`/campaigns/${id}`, { status: 'PAUSED' }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['campaigns'] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => axios.delete(`/api/campaigns/${id}`),
+    mutationFn: (id: string) => axios.delete(`/campaigns/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['campaigns'] }),
   });
 
   const createABMutation = useMutation({
-    mutationFn: (data: typeof abForm) => axios.post('/api/ab-tests', data),
+    mutationFn: (data: typeof abForm) => axios.post('/ab-tests', data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['ab-tests'] }); setAbForm({ name: '', variantA: '', variantB: '', trafficSplit: 50 }); },
   });
 

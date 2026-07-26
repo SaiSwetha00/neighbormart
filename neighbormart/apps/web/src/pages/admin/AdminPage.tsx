@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import axios from 'axios';
+import axios from '@/services/api';
 import { Shield, Store, Users, DollarSign, Cpu, Settings, CheckCircle, XCircle, AlertTriangle, TrendingUp } from 'lucide-react';
 
 type StoreItem = { id: string; name: string; status: string; createdAt: string; _count: { users: number; orders: number; products: number } };
@@ -21,41 +21,41 @@ export default function AdminPage() {
 
   const { data: stores = [], isLoading: storesLoading } = useQuery<StoreItem[]>({
     queryKey: ['admin-stores'],
-    queryFn: () => axios.get('/api/admin/stores').then(r => r.data.data),
+    queryFn: () => axios.get('/admin/stores').then(r => r.data.data),
     enabled: tab === 'stores',
   });
 
   const { data: usersData } = useQuery<{ users: UserItem[]; total: number }>({
     queryKey: ['admin-users'],
-    queryFn: () => axios.get('/api/admin/users').then(r => r.data.data),
+    queryFn: () => axios.get('/admin/users').then(r => r.data.data),
     enabled: tab === 'users',
   });
 
   const { data: revenue } = useQuery({
     queryKey: ['admin-revenue'],
-    queryFn: () => axios.get('/api/admin/revenue').then(r => r.data.data),
+    queryFn: () => axios.get('/admin/revenue').then(r => r.data.data),
     enabled: tab === 'revenue',
   });
 
   const { data: aiUsage } = useQuery({
     queryKey: ['admin-ai'],
-    queryFn: () => axios.get('/api/admin/ai-usage').then(r => r.data.data),
+    queryFn: () => axios.get('/admin/ai-usage').then(r => r.data.data),
     enabled: tab === 'ai',
   });
 
   const { data: settings } = useQuery({
     queryKey: ['admin-settings'],
-    queryFn: () => axios.get('/api/admin/settings').then(r => r.data.data),
+    queryFn: () => axios.get('/admin/settings').then(r => r.data.data),
     enabled: tab === 'settings',
   });
 
   const updateStoreMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => axios.patch(`/api/admin/stores/${id}/status`, { status }),
+    mutationFn: ({ id, status }: { id: string; status: string }) => axios.patch(`/admin/stores/${id}/status`, { status }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-stores'] }),
   });
 
   const gdprDeleteMutation = useMutation({
-    mutationFn: (userId: string) => axios.delete(`/api/admin/gdpr/delete/${userId}`),
+    mutationFn: (userId: string) => axios.delete(`/admin/gdpr/delete/${userId}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-users'] }),
   });
 

@@ -457,10 +457,10 @@ function ManualOverrideDialog({
 // ─── Attendance Tab ────────────────────────────────────────────────────────────
 
 const ATTENDANCE_COLORS: Record<string, string> = {
-  ON_TIME: "bg-green-100 text-green-700",
-  LATE: "bg-yellow-100 text-yellow-700",
-  ABSENT: "bg-red-100 text-red-700",
-  NOT_CLOCKED_IN: "bg-gray-100 text-gray-600",
+  ON_TIME: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  LATE: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  ABSENT: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  NOT_CLOCKED_IN: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400",
 };
 
 function AttendanceTab() {
@@ -494,10 +494,10 @@ function AttendanceTab() {
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
 
   const summaryCards = [
-    { label: "Present Today", value: data?.present ?? 0, color: "bg-green-50 text-green-700", icon: UserCheck },
-    { label: "Late", value: data?.late ?? 0, color: "bg-yellow-50 text-yellow-700", icon: Clock },
-    { label: "Absent", value: data?.absent ?? 0, color: "bg-red-50 text-red-700", icon: UserX },
-    { label: "Not Clocked In", value: data?.notClockedIn ?? 0, color: "bg-gray-50 text-gray-600", icon: AlertCircle },
+    { label: "Present Today", value: data?.present ?? 0, color: "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300", icon: UserCheck },
+    { label: "Late", value: data?.late ?? 0, color: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300", icon: Clock },
+    { label: "Absent", value: data?.absent ?? 0, color: "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300", icon: UserX },
+    { label: "Not Clocked In", value: data?.notClockedIn ?? 0, color: "bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400", icon: AlertCircle },
   ];
 
   return (
