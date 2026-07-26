@@ -33,7 +33,7 @@ export async function registerStore(req: Request, res: Response): Promise<void> 
     const data = req.body as RegisterStoreInput;
     const { store, user } = await authService.registerStore(data);
 
-    return sendSuccess(
+    sendSuccess(
       res,
       { store, user },
       'Store registered successfully',
@@ -42,7 +42,7 @@ export async function registerStore(req: Request, res: Response): Promise<void> 
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Registration failed';
-    return sendError(res, message, 400);
+    sendError(res, message, 400);
   }
 }
 
@@ -71,14 +71,14 @@ export async function login(req: Request, res: Response): Promise<void> {
     };
     const redirectTo = redirectMap[user.role] ?? '/dashboard';
 
-    return sendSuccess(
+    sendSuccess(
       res,
       { user, sessionId, redirectTo },
       'Login successful',
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Login failed';
-    return sendError(res, message, 401);
+    sendError(res, message, 401);
   }
 }
 
@@ -92,14 +92,14 @@ export async function verifyMfa(req: Request, res: Response): Promise<void> {
     const { code } = req.body as { code: string };
 
     if (!code || code.length !== 6) {
-      return sendError(res, 'A 6-digit MFA code is required', 400);
+      sendError(res, 'A 6-digit MFA code is required', 400); return;
     }
 
-    return sendSuccess(res, { verified: true }, 'MFA verification successful');
+    sendSuccess(res, { verified: true }, 'MFA verification successful');
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'MFA verification failed';
-    return sendError(res, message, 400);
+    sendError(res, message, 400);
   }
 }
 
@@ -112,19 +112,19 @@ export async function refreshToken(req: Request, res: Response): Promise<void> {
       req.cookies?.refreshToken ?? req.body?.token;
 
     if (!token) {
-      return sendError(res, 'Refresh token is required', 401);
+      sendError(res, 'Refresh token is required', 401); return;
     }
 
     const { accessToken } = await authService.refreshToken(token);
 
     res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTIONS);
 
-    return sendSuccess(res, { accessToken }, 'Token refreshed successfully');
+    sendSuccess(res, { accessToken }, 'Token refreshed successfully');
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Token refresh failed';
     clearAuthCookies(res);
-    return sendError(res, message, 401);
+    sendError(res, message, 401);
   }
 }
 
@@ -140,11 +140,11 @@ export async function logout(req: AuthRequest, res: Response): Promise<void> {
 
     clearAuthCookies(res);
 
-    return sendSuccess(res, null, 'Logged out successfully');
+    sendSuccess(res, null, 'Logged out successfully');
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Logout failed';
     clearAuthCookies(res);
-    return sendError(res, message, 500);
+    sendError(res, message, 500);
   }
 }
 
@@ -155,11 +155,11 @@ export async function forgotPassword(req: Request, res: Response): Promise<void>
     const { email } = req.body as { email: string };
     const result = await authService.forgotPassword(email);
 
-    return sendSuccess(res, result, result.message);
+    sendSuccess(res, result, result.message);
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Password reset request failed';
-    return sendError(res, message, 500);
+    sendError(res, message, 500);
   }
 }
 
@@ -174,11 +174,11 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
 
     const result = await authService.resetPassword(token, password);
 
-    return sendSuccess(res, null, result.message);
+    sendSuccess(res, null, result.message);
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Password reset failed';
-    return sendError(res, message, 400);
+    sendError(res, message, 400);
   }
 }
 
@@ -189,11 +189,11 @@ export async function getSessions(req: AuthRequest, res: Response): Promise<void
     const userId = req.user!.userId;
     const sessions = await authService.getSessions(userId);
 
-    return sendSuccess(res, { sessions }, 'Sessions retrieved successfully');
+    sendSuccess(res, { sessions }, 'Sessions retrieved successfully');
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Failed to retrieve sessions';
-    return sendError(res, message, 500);
+    sendError(res, message, 500);
   }
 }
 
@@ -205,16 +205,16 @@ export async function deleteSession(req: AuthRequest, res: Response): Promise<vo
     const { id: sessionId } = req.params;
 
     if (!sessionId) {
-      return sendError(res, 'Session ID is required', 400);
+      sendError(res, 'Session ID is required', 400); return;
     }
 
     await authService.deleteSession(sessionId, userId);
 
-    return sendSuccess(res, null, 'Session deleted successfully');
+    sendSuccess(res, null, 'Session deleted successfully');
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : 'Failed to delete session';
-    return sendError(res, message, 400);
+    sendError(res, message, 400);
   }
 }
 
@@ -225,7 +225,7 @@ export async function getLoginHistory(req: AuthRequest, res: Response): Promise<
     const userId = req.user!.userId;
     const history = await authService.getLoginHistory(userId);
 
-    return sendSuccess(
+    sendSuccess(
       res,
       { history },
       'Login history retrieved successfully',
@@ -235,6 +235,6 @@ export async function getLoginHistory(req: AuthRequest, res: Response): Promise<
       error instanceof Error
         ? error.message
         : 'Failed to retrieve login history';
-    return sendError(res, message, 500);
+    sendError(res, message, 500);
   }
 }

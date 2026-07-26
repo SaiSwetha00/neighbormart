@@ -1,4 +1,5 @@
 import prisma from '../../config/database';
+import { Prisma } from '@prisma/client';
 
 export interface AuditLogQuery {
   userId?: string;
@@ -73,7 +74,17 @@ export async function createAuditLog(data: {
   newValue?: unknown;
   ipAddress?: string;
 }) {
-  return prisma.auditLog.create({ data: data as any });
+  const payload: Prisma.AuditLogUncheckedCreateInput = {
+    storeId: data.storeId,
+    userId: data.userId,
+    action: data.action,
+    module: data.module,
+    recordId: data.recordId,
+    oldValue: data.oldValue as Prisma.InputJsonValue ?? Prisma.JsonNull,
+    newValue: data.newValue as Prisma.InputJsonValue ?? Prisma.JsonNull,
+    ipAddress: data.ipAddress,
+  };
+  return prisma.auditLog.create({ data: payload });
 }
 
 export async function getAuditModules(storeId: string) {

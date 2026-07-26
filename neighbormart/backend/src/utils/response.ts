@@ -24,13 +24,19 @@ export const sendSuccess = (
 
 export const sendError = (
   res: Response,
-  message = 'An error occurred',
+  message: string | unknown = 'An error occurred',
   statusCode = 500,
   errors?: unknown
 ): void => {
+  const msg =
+    typeof message === 'string'
+      ? message
+      : message instanceof Error
+        ? message.message
+        : 'An error occurred';
   res.status(statusCode).json({
     success: false,
-    message,
+    message: msg,
     ...(errors !== undefined && errors !== null ? { errors } : {}),
   });
 };
